@@ -263,7 +263,9 @@ const FULLLIST=['Cleric','Druid','Paladin','Ranger'];
 function defFull(cls){ const k=cclass(cls); return k?!!k.full:FULLLIST.includes(cls); }
 function topLevel(c){ let t=0; maxSlots(c).forEach((n,i)=>{ if(n>0) t=i+1; }); if(isPact(c)) t=Math.max(t,pact(c.level)[1]); return t; }
 // Add every class spell the character can cast (level 1 up to their highest slot), unprepared. Never removes.
-function fillList(c){ const t=topLevel(c); let n=0; all().forEach(s=>{ if(s.l>=1&&s.l<=t&&inClass(s,c.cls)&&!(s.id in c.known)){ c.known[s.id]=false; n++; } }); return n; }
+function fillList(c,force){ const t=topLevel(c); let n=0; c.removed=c.removed||{}; all().forEach(s=>{ if(s.l>=1&&s.l<=t&&inClass(s,c.cls)&&!(s.id in c.known)&&(force||!c.removed[s.id])){ c.known[s.id]=false; delete c.removed[s.id]; n++; } }); return n; }
+const wantsFull=c=>c.full==null?defFull(c.cls):!!c.full;
+function autoFill(){ let n=0; S.chars.forEach(c=>{ if(wantsFull(c)) n+=fillList(c,false); }); if(n) save(); return n; }
 const isAlways=(c,id)=>!!(c.always&&c.always[id]);
 const isPrep=(c,id)=>!!(c.known[id]||isAlways(c,id));
 function defAbil(cls){ const k=cclass(cls); if(k&&k.abil) return k.abil; return {Wizard:'int',Cleric:'wis',Druid:'wis',Ranger:'wis'}[cls]||'cha'; }
@@ -323,6 +325,7 @@ function setTab(v){
   render(); window.scrollTo(0,0);
 }
 function render(){
+  autoFill();
   const c=me();
   $('#whoName').textContent=c?c.name:'No character';
   $('#whoCls').textContent=c?c.cls+' · level '+c.level:'Tap to add';
@@ -409,7 +412,7 @@ function renderBook(){
   ${topLevel(c)>0&&allClasses().includes(c.cls)?`<div class="actions" style="margin-top:4px"><button class="btn quiet" type="button" id="fillList">Add all ${esc(c.cls)} spells up to ${ORD[topLevel(c)]} level</button></div>`:'<span id="fillList" hidden></span>'}`+
     (list.length?groupList(shown,c,true)+'<p class="note">Tap the circle to prepare or unprepare a spell. ✦ means always prepared, which doesn\'t count toward the limit. Open a spell to change that.</p>':'<div class="empty"><b>Your spellbook is empty</b>Open a spell in All spells and tap “Add to spellbook”.</div>');
   $('#onlyPrep').addEventListener('click',()=>{S.ui.onlyPrep=!onlyPrep;save();renderBook();});
-  $('#fillList').addEventListener('click',()=>{ const n=fillList(c); save(); renderBook(); toast(n?n+' spells added. Prepare the ones you want.':'Your spellbook already has every '+c.cls+' spell you can cast.'); });
+  $('#fillList').addEventListener('click',()=>{ const n=fillList(c,true); save(); renderBook(); toast(n?n+' spells added. Prepare the ones you want.':'Your spellbook already has every '+c.cls+' spell you can cast.'); });
 }
 
 function renderSlots(){
@@ -552,7 +555,7 @@ function openSpell(id){
   ${S.classes.length?`<div class="castrow" style="margin-top:10px" aria-label="Custom class lists">${S.classes.map(k=>`<button class="chip" type="button" data-kc="${esc(k.id)}" aria-pressed="${k.spells.includes(s.id)}">${k.spells.includes(s.id)?'✓ ':'+ '}${esc(k.name)}</button>`).join('')}</div>`:''}
   ${c?`<div class="actions"><button class="btn ${known?'blood':'solid'}" type="button" id="tKnown">${known?'Remove from spellbook':'Add to spellbook'}</button>${known&&s.l>0&&!isAlways(c,s.id)?`<button class="btn" type="button" id="tPrep">${c.known[s.id]?'Unprepare':'Prepare'}</button>`:''}${s.l>0?`<button class="btn quiet" type="button" id="tAlways">${isAlways(c,s.id)?'✦ Always prepared: on':'Always prepared'}</button>`:''}${s.hb?'<button class="btn quiet" type="button" id="tEdit">Edit</button>':''}</div>`:''}
   ${cast}`, p=>{
-    p.querySelector('#tKnown')?.addEventListener('click',()=>{ if(known){ delete c.known[s.id]; if(c.always) delete c.always[s.id]; } else c.known[s.id]=s.l>0; save(); render(); openSpell(id); toast(known?'Removed from '+c.name:'Added to '+c.name+(s.l>0?' and prepared':'')); });
+    p.querySelector('#tKnown')?.addEventListener('click',()=>{ if(known){ delete c.known[s.id]; if(c.always) delete c.always[s.id]; c.removed=c.removed||{}; c.removed[s.id]=true; } else c.known[s.id]=s.l>0; save(); render(); openSpell(id); toast(known?'Removed from '+c.name:'Added to '+c.name+(s.l>0?' and prepared':'')); });
     p.querySelector('#tPrep')?.addEventListener('click',()=>{ c.known[s.id]=!c.known[s.id]; save(); render(); openSpell(id); });
     p.querySelector('#tAlways')?.addEventListener('click',()=>{ c.always=c.always||{}; if(c.always[s.id]){ delete c.always[s.id]; c.known[s.id]=false; toast(s.n+' is no longer always prepared'); } else { c.always[s.id]=true; c.known[s.id]=false; toast(s.n+' is always prepared'); } save(); render(); openSpell(id); });
     p.querySelector('#tEdit')?.addEventListener('click',()=>openForm(s));
@@ -710,7 +713,7 @@ function openChars(editId){
     p.querySelectorAll('[data-pick]').forEach(b=>b.addEventListener('click',()=>{S.active=b.dataset.pick;save();render();closeSheet();toast('Now using '+me().name);}));
     p.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>openChars(b.dataset.edit)));
     p.querySelector('#cNew')?.addEventListener('click',()=>openChars(null));
-    p.querySelector('#cc').addEventListener('change',e=>{ if(!ed||ed.full==null) $('#cfull').checked=defFull(e.target.value); });
+    p.querySelector('#cc').addEventListener('change',e=>{ $('#cfull').checked=defFull(e.target.value); });
     p.querySelector('#cf').addEventListener('submit',ev=>{
       ev.preventDefault();
       const n=$('#cn').value.trim(), cls=$('#cc').value, lv=Math.max(1,Math.min(20,parseInt($('#cl').value,10)||1));
@@ -719,7 +722,7 @@ function openChars(editId){
       const plv=$('#cpl').value.trim(), pl=plv===''?null:Math.max(0,Math.min(60,parseInt(plv,10)||0));
       const fu=$('#cfull').checked; let tgt;
       if(ed){ Object.assign(ed,{name:n,cls,level:lv,abil:ab,score:sc,bonus:bo,prepLimit:pl,full:fu}); tgt=ed; } else { tgt=Object.assign(newChar(n,cls,lv),{abil:ab,score:sc,bonus:bo,prepLimit:pl,full:fu}); S.chars.push(tgt); S.active=tgt.id; }
-      const added=fu?fillList(tgt):0;
+      const added=fu?fillList(tgt,false):0;
       save(); render(); closeSheet(); toast((ed?'Character saved':'Added '+n)+(added?' · '+added+' spells added to the spellbook':''));
     });
     p.querySelector('#cDel')?.addEventListener('click',()=>{
