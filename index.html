@@ -50,8 +50,8 @@ section.view{padding-block:14px 8px}
 
 /* bottom nav */
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--vellum);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
-nav.tabs .in{max-width:44rem;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
-nav.tabs button{min-width:0;height:var(--nav-h);background:none;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);font-family:var(--util);font-size:12px;letter-spacing:.06em}
+nav.tabs .in{max-width:44rem;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr)}
+nav.tabs button{min-width:0;height:var(--nav-h);background:none;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);font-family:var(--util);font-size:11px;letter-spacing:.03em}
 nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5}
 nav.tabs button[aria-selected="true"]{color:var(--gold-hi)}
 nav.tabs button[aria-selected="true"] svg{filter:drop-shadow(0 0 6px rgba(224,189,120,.45))}
@@ -199,6 +199,52 @@ button.lk{background:none;border:0;padding:0;font:inherit;font-weight:600;color:
 .mapcard img{display:block;width:100%;max-width:100%;aspect-ratio:16/7;object-fit:cover;object-position:50% 45%}
 .mapcard span{display:block;padding:8px 12px;font-family:var(--display);font-weight:600;font-size:19px;color:var(--gold-hi)}
 mark{background:rgba(201,164,90,.28);color:var(--pale);border-radius:2px;padding:0 1px}
+.sh-top{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.sh-top .who2{font-family:var(--display);font-weight:700;font-size:26px;color:var(--gold);line-height:1.05}
+.sh-top .sub{font-family:var(--util);font-size:12.5px;color:var(--muted);letter-spacing:.04em}
+.vit{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cell{border:1px solid var(--line);border-radius:3px;padding:7px 8px 8px;text-align:center;min-width:0;background:var(--void)}
+.cell .lab{display:block;font-family:var(--util);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.cell .big{font-family:var(--display);font-weight:700;font-size:30px;line-height:1.05;color:var(--gold-hi);font-variant-numeric:tabular-nums}
+.cell input.num{width:100%;background:transparent;border:0;border-bottom:1px dashed var(--line);text-align:center;font-family:var(--display);font-weight:700;font-size:28px;color:var(--gold-hi);padding:0;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.cell input.num.sm{font-size:17px;font-weight:600;color:var(--pale)}
+input.num::-webkit-outer-spin-button,input.num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.hp{grid-column:1/-1;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;text-align:left}
+.hp .bar{height:8px;border-radius:4px;background:rgba(201,164,90,.15);overflow:hidden;margin-top:6px}
+.hp .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blood),var(--gold));transition:width .2s}
+.hpctl{display:flex;gap:6px;align-items:center}
+.hpctl input{width:4.2rem;background:var(--void);border:1px solid var(--line);border-radius:3px;padding:8px;text-align:center;font-variant-numeric:tabular-nums}
+.hpctl .btn{padding:0 10px;min-height:40px}
+.trio{display:flex;gap:10px;justify-content:center;align-items:baseline;flex-wrap:wrap;font-family:var(--util);font-size:12px;color:var(--muted)}
+.abil{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+.abil .cell .big{font-size:28px}
+.sv{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:4px;font-family:var(--util);font-size:12px;color:var(--ink);background:none;border:0;width:100%;padding:2px 0}
+.dot{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--gold);display:inline-block;flex:none}
+.dot.on{background:var(--gold)}
+.dot.ex{background:var(--gold);box-shadow:0 0 0 2px var(--void),0 0 0 3.5px var(--gold)}
+.skills{columns:2;column-gap:16px;margin-top:4px}
+.skills button{display:flex;width:100%;align-items:center;gap:8px;background:none;border:0;border-bottom:1px solid var(--line-soft);padding:7px 0;break-inside:avoid;text-align:left;font-size:15.5px}
+.skills .v{font-family:var(--util);font-variant-numeric:tabular-nums;color:var(--gold-hi);width:2.2em;text-align:right;flex:none}
+.skills .a{font-family:var(--util);font-size:10.5px;color:var(--muted);margin-left:auto}
+@media (max-width:360px){.skills{columns:1}}
+.cell.ds{grid-column:1/-1}
+.cell.ds .pipsrow{justify-content:center;margin-top:6px}
+.pipsrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pipsrow button{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);background:none;font-family:var(--util);font-size:12px;color:var(--muted)}
+.pipsrow button.on{background:var(--blood);border-color:var(--blood-hi);color:var(--pale)}
+.pipsrow button.ok.on{background:var(--veil);border-color:var(--veil);color:var(--void)}
+.conds{display:flex;flex-wrap:wrap;gap:6px}
+.conds .chip{height:32px;font-size:12px}
+.rowlist{list-style:none;margin:0;padding:0}
+.rowlist li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;border-bottom:1px solid var(--line-soft);padding:9px 0}
+.rowlist .t{font-family:var(--display);font-weight:600;font-size:18.5px;color:var(--pale);background:none;border:0;padding:0;text-align:left;min-width:0;overflow-wrap:anywhere}
+.rowlist .m{grid-column:1/-1;font-family:var(--util);font-size:12.5px;color:var(--muted)}
+.uses{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.uses button{width:24px;height:24px;border:0;background:none;padding:0;display:grid;place-items:center}
+.uses button i{width:15px;height:15px;transform:rotate(45deg);border:1.5px solid var(--gold);background:var(--gold);display:block}
+.uses button.spent i{background:transparent;border-color:rgba(201,164,90,.45)}
+.tag{font-family:var(--util);font-size:10px;font-weight:600;letter-spacing:.08em;border:1px solid var(--line);color:var(--muted);padding:0 4px;border-radius:2px;margin-left:6px;vertical-align:2px}
+textarea.notes{width:100%;min-height:6rem;background:var(--void);border:1px solid var(--line);border-radius:3px;padding:8px 10px;font-family:var(--body);font-size:16px;color:var(--ink);line-height:1.45;resize:vertical}
 .toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:60;background:var(--pale);color:var(--void);font-family:var(--util);font-weight:600;font-size:14px;padding:9px 16px;border-radius:3px;box-shadow:0 6px 24px rgba(0,0,0,.5);max-width:calc(100% - 32px)}
 </style>
 
@@ -209,6 +255,7 @@ mark{background:rgba(201,164,90,.28);color:var(--pale);border-radius:2px;padding
 </div></header>
 
 <main>
+  <section class="view wrap" id="v-sheet" hidden></section>
   <section class="view wrap" id="v-spells"></section>
   <section class="view wrap" id="v-book" hidden></section>
   <section class="view wrap" id="v-slots" hidden></section>
@@ -217,7 +264,8 @@ mark{background:rgba(201,164,90,.28);color:var(--pale);border-radius:2px;padding
 </main>
 
 <nav class="tabs" aria-label="Sections"><div class="in" role="tablist">
-  <button type="button" role="tab" data-v="spells" aria-selected="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>All spells</button>
+  <button type="button" role="tab" data-v="sheet" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M6 3.5h9l3 3v14H6z"/><path d="M9 9h6M9 12.5h6M9 16h4"/></svg>Sheet</button>
+  <button type="button" role="tab" data-v="spells" aria-selected="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>Spells</button>
   <button type="button" role="tab" data-v="book" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5c-.8 0-1.5-.7-1.5-1.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg>Spellbook</button>
   <button type="button" role="tab" data-v="slots" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 3l5 9-5 9-5-9z"/><path d="M12 3v18"/></svg>Slots</button>
   <button type="button" role="tab" data-v="world" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.6 2.4 3.8 5.2 3.8 8.5s-1.2 6.1-3.8 8.5c-2.6-2.4-3.8-5.2-3.8-8.5s1.2-6.1 3.8-8.5z"/></svg>World</button>
@@ -300,7 +348,7 @@ const isPrep=(c,id)=>!!(c.known[id]||isAlways(c,id));
 function defAbil(cls){ const k=cclass(cls); if(k&&k.abil) return k.abil; return {Wizard:'int',Cleric:'wis',Druid:'wis',Ranger:'wis'}[cls]||'cha'; }
 const prof=l=>2+Math.floor((l-1)/4);
 const sgn=n=>(n>=0?'+':'')+n;
-function castStats(c){ const a=c.abil||defAbil(c.cls), sc=c.score||10, mod=Math.floor((sc-10)/2), b=c.bonus||0, p=prof(c.level);
+function castStats(c){ const a=c.abil||defAbil(c.cls), sc=(c.sheet&&c.sheet.ab&&c.sheet.ab[a])||c.score||10, mod=Math.floor((sc-10)/2), b=c.bonus||0, p=prof(c.level);
   return {a,sc,mod,b,p,dc:8+p+mod+b,atk:p+mod+b}; }
 function statStrip(c){ const t=castStats(c); return `<div class="castnums"><div><span>Spell save DC</span><b>${t.dc}</b></div><div><span>Spell attack</span><b>${sgn(t.atk)}</b></div><div><span>${ABIL[t.a].slice(0,3).toUpperCase()} modifier</span><b>${sgn(t.mod)}</b></div></div>`; }
 function newChar(name,cls,level){ return {id:uid(),name,cls,level,known:{},custom:null,spent:new Array(9).fill(0),pactSpent:0,conc:null}; }
@@ -350,7 +398,7 @@ function md(src){
 function setTab(v){
   S.ui.tab=v; save();
   document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v===v)));
-  ['spells','book','slots','brew','world'].forEach(k=>$('#v-'+k).hidden=k!==v);
+  ['sheet','spells','book','slots','brew','world'].forEach(k=>$('#v-'+k).hidden=k!==v);
   render(); window.scrollTo(0,0);
 }
 function render(){
@@ -359,7 +407,7 @@ function render(){
   $('#whoName').textContent=c?c.name:'No character';
   $('#whoCls').textContent=c?c.cls+' · level '+c.level:'Tap to add';
   const v=S.ui.tab;
-  if(v==='spells') renderSpells(); else if(v==='book') renderBook(); else if(v==='slots') renderSlots(); else if(v==='world') renderWorld(); else renderBrew();
+  if(v==='sheet') renderSheet(); else if(v==='spells') renderSpells(); else if(v==='book') renderBook(); else if(v==='slots') renderSlots(); else if(v==='world') renderWorld(); else renderBrew();
 }
 
 function spellLi(s,c,showPrep){
@@ -472,8 +520,8 @@ function renderSlots(){
     save(); renderSlots();
   }));
   $('#endConc')?.addEventListener('click',()=>{c.conc=null;save();renderSlots();});
-  $('#shortRest').addEventListener('click',()=>{c.pactSpent=0;save();renderSlots();toast(isPact(c)?'Pact slots restored':'Short rest taken');});
-  $('#longRest').addEventListener('click',()=>{c.spent=new Array(9).fill(0);c.pactSpent=0;c.conc=null;save();renderSlots();toast('All slots restored');});
+  $('#shortRest').addEventListener('click',()=>{shortRest(c);save();renderSlots();toast(isPact(c)?'Short rest: Pact slots and short-rest features restored':'Short rest: short-rest features restored');});
+  $('#longRest').addEventListener('click',()=>{longRest(c);save();renderSlots();toast('Long rest: slots, HP and features restored');});
   $('#autoSlots')?.addEventListener('click',()=>{c.custom=null;save();renderSlots();});
   $('#editSlots').addEventListener('click',()=>{
     const cur=maxSlots(c);
@@ -556,6 +604,107 @@ function doImport(text){
 }
 function normBrew(s){
   return {id:String(s.id||'hb-'+uid()).startsWith('hb-')?String(s.id):'hb-'+uid(),n:String(s.n).slice(0,80),l:s.l,s:SCHOOLS.includes(s.s)?s.s:'Evocation',c:(s.c||[]).filter(x=>CLASSES.includes(x)),t:String(s.t||'Action'),r:String(s.r||'Self'),k:String(s.k||''),m:String(s.m||''),d:String(s.d||'Instantaneous'),co:!!s.co,ri:!!s.ri,x:String(s.x||''),hb:true};
+}
+
+/* ---------- character sheet ---------- */
+const AB=[['str','Strength'],['dex','Dexterity'],['con','Constitution'],['int','Intelligence'],['wis','Wisdom'],['cha','Charisma']];
+const SKILLS=[['Acrobatics','dex'],['Animal Handling','wis'],['Arcana','int'],['Athletics','str'],['Deception','cha'],['History','int'],['Insight','wis'],['Intimidation','cha'],['Investigation','int'],['Medicine','wis'],['Nature','int'],['Perception','wis'],['Performance','cha'],['Persuasion','cha'],['Religion','int'],['Sleight of Hand','dex'],['Stealth','dex'],['Survival','wis']];
+const CONDS=['Blinded','Charmed','Deafened','Frightened','Grappled','Incapacitated','Invisible','Paralyzed','Petrified','Poisoned','Prone','Restrained','Stunned','Unconscious'];
+const HD={Barbarian:12,Fighter:10,Paladin:10,Ranger:10,Bard:8,Cleric:8,Druid:8,Monk:8,Rogue:8,Warlock:8,Sorcerer:6,Wizard:6};
+function sheetOf(c){
+  if(!c.sheet){ const ab={str:10,dex:10,con:10,int:10,wis:10,cha:10}; const a=c.abil||defAbil(c.cls); ab[a]=c.score||ab[a];
+    c.sheet={ab,sv:{},sk:{},ac:10,shield:false,hp:{cur:8,tmp:0,max:8},hd:{spent:0},ds:{s:0,f:0},speed:30,species:'',bg:'',insp:false,exh:0,cond:[],wpn:[],ft:[],notes:{traits:'',feats:'',equip:'',prof:''}}; }
+  return c.sheet; }
+const md5=n=>Math.floor((n-10)/2);
+function longRest(c){ c.spent=new Array(9).fill(0); c.pactSpent=0; c.conc=null;
+  if(c.sheet){ const h=c.sheet; h.hp.cur=h.hp.max; h.hp.tmp=0; h.hd.spent=0; h.ds={s:0,f:0}; if(h.exh>0) h.exh--; h.ft.forEach(f=>{ if(f.rest) f.used=0; }); } }
+function shortRest(c){ c.pactSpent=0; if(c.sheet) c.sheet.ft.forEach(f=>{ if(f.rest==='sr') f.used=0; }); }
+function renderSheet(){
+  const el=$('#v-sheet'), c=me();
+  if(!c){ el.innerHTML='<div class="empty"><b>No character yet</b>Tap the box at the top right to add one.</div>'; return; }
+  const h=sheetOf(c), pb=prof(c.level), mod=k=>md5(h.ab[k]||10);
+  const sv=k=>mod(k)+(h.sv[k]?pb:0), sk=([n,k])=>mod(k)+(h.sk[n]===2?pb*2:h.sk[n]===1?pb:0);
+  const perc=10+sk(['Perception','wis']), hpw=Math.max(0,Math.min(100,Math.round(100*h.hp.cur/Math.max(1,h.hp.max))));
+  const die=HD[c.cls]||(cclass(c.cls)?8:8);
+  el.innerHTML=`<div class="sh-top"><div><div class="who2">${esc(c.name)}</div><div class="sub">${esc(c.cls)} ${c.level}${h.species?' · '+esc(h.species):''}${h.bg?' · '+esc(h.bg):''}</div></div>
+    <button class="chip" type="button" id="insp" aria-pressed="${!!h.insp}">${h.insp?'✦ ':''}Heroic Inspiration</button></div>
+  <div class="vit">
+    <div class="cell hp"><div><span class="lab">Hit points</span><div class="big">${h.hp.cur}<span style="font-size:18px;color:var(--muted)"> / ${h.hp.max}</span>${h.hp.tmp?`<span style="font-size:17px;color:var(--veil)"> +${h.hp.tmp} temp</span>`:''}</div><div class="bar"><i style="width:${hpw}%"></i></div></div>
+      <div class="hpctl"><input id="hpAmt" type="number" inputmode="numeric" min="0" placeholder="0" aria-label="Amount"><button class="btn blood" type="button" id="dmg">Damage</button><button class="btn" type="button" id="heal">Heal</button></div></div>
+    <div class="cell"><span class="lab">Armor class</span><input class="num" id="f-ac" type="number" inputmode="numeric" value="${h.ac+(h.shield?2:0)}" aria-label="Armor class"><button class="sv" type="button" id="shield"><span class="dot ${h.shield?'on':''}"></span>Shield +2</button></div>
+    <div class="cell"><span class="lab">Initiative</span><div class="big">${sgn(mod('dex'))}</div></div>
+    <div class="cell"><span class="lab">Speed</span><input class="num" id="f-speed" type="number" inputmode="numeric" value="${h.speed}" aria-label="Speed"></div>
+    <div class="cell"><span class="lab">Proficiency</span><div class="big">${sgn(pb)}</div></div>
+    <div class="cell"><span class="lab">Passive Perception</span><div class="big">${perc}</div></div>
+    <div class="cell"><span class="lab">Hit dice d${die}</span><div class="big">${c.level-h.hd.spent}<span style="font-size:16px;color:var(--muted)">/${c.level}</span></div><div class="trio"><button class="linkbtn" type="button" id="hdUse">Spend one</button></div></div>
+    <div class="cell"><span class="lab">Max HP</span><input class="num sm" id="f-hpmax" type="number" inputmode="numeric" value="${h.hp.max}" aria-label="Max HP"></div>
+    <div class="cell"><span class="lab">Temp HP</span><input class="num sm" id="f-tmp" type="number" inputmode="numeric" value="${h.hp.tmp}" aria-label="Temp HP"></div>
+    <div class="cell ds"><span class="lab">Death saves</span><div class="pipsrow"><span class="note">Successes</span>${[0,1,2].map(i=>`<button type="button" class="ok ${h.ds.s>i?'on':''}" data-ds="s" aria-label="Success ${i+1}">✓</button>`).join('')}<span class="note" style="margin-left:10px">Failures</span>${[0,1,2].map(i=>`<button type="button" class="${h.ds.f>i?'on':''}" data-ds="f" aria-label="Failure ${i+1}">✕</button>`).join('')}</div></div>
+  </div>
+  <h3 class="sec">Abilities</h3>
+  <div class="abil">${AB.map(([k,n])=>`<div class="cell"><span class="lab">${n}</span><div class="big">${sgn(mod(k))}</div><input class="num sm" data-ab="${k}" type="number" inputmode="numeric" min="1" max="30" value="${h.ab[k]}" aria-label="${n} score"><button class="sv" type="button" data-sv="${k}"><span class="dot ${h.sv[k]?'on':''}"></span>Save ${sgn(sv(k))}</button></div>`).join('')}</div>
+  <h3 class="sec">Skills</h3>
+  <p class="lead" style="font-size:15px">Tap a skill: proficient, then expertise, then off.</p>
+  <div class="skills">${SKILLS.map(x=>`<button type="button" data-sk="${x[0]}"><span class="dot ${h.sk[x[0]]===2?'ex':h.sk[x[0]]===1?'on':''}"></span><span class="v">${sgn(sk(x))}</span>${x[0]}<span class="a">${x[1].toUpperCase()}</span></button>`).join('')}</div>
+  <h3 class="sec">Exhaustion and conditions</h3>
+  <div class="pipsrow">${[1,2,3,4,5,6].map(i=>`<button type="button" class="${h.exh>=i?'on':''}" data-exh="${i}" aria-label="Exhaustion ${i}">${i}</button>`).join('')}<span class="note" style="margin-left:6px">${h.exh?'−'+(h.exh*2)+' to d20 tests, −'+(h.exh*5)+' ft speed':'No exhaustion'}</span></div>
+  <div class="conds" style="margin-top:10px">${CONDS.map(n=>`<button class="chip" type="button" data-cond="${n}" aria-pressed="${h.cond.includes(n)}">${n}</button>`).join('')}</div>
+  <h3 class="sec">Weapons and damage</h3>
+  ${h.wpn.length?`<ul class="rowlist">${h.wpn.map((w,i)=>`<li><button class="t" type="button" data-wpn="${i}">${esc(w.n)}</button><span style="font-family:var(--util);color:var(--gold-hi)">${esc(w.atk)}</span><span class="m">${esc(w.dmg)}${w.notes?' · '+esc(w.notes):''}</span></li>`).join('')}</ul>`:'<p class="note">No weapons yet.</p>'}
+  <div class="actions"><button class="btn quiet" type="button" data-wpn="new">Add weapon</button></div>
+  <h3 class="sec">Features</h3>
+  <p class="lead" style="font-size:15px">Class, subclass, species and feat features. Uses refill on a Short or Long rest.</p>
+  ${h.ft.length?`<ul class="rowlist">${h.ft.map((f,i)=>`<li><button class="t" type="button" data-ft="${i}">${esc(f.n)}${f.rest?`<span class="tag">${f.rest==='sr'?'SR':'LR'}</span>`:''}</button><span class="uses">${f.max?Array.from({length:f.max},(_,j)=>`<button type="button" class="${j>=f.max-(f.used||0)?'spent':''}" data-use="${i}" aria-label="Use ${j+1}"><i></i></button>`).join(''):''}</span><span class="m">${esc([f.src,f.lvl?'level '+f.lvl:''].filter(Boolean).join(' · '))}${f.x?' · '+esc(f.x.slice(0,90))+(f.x.length>90?'…':''):''}</span></li>`).join('')}</ul>`:'<p class="note">No features yet.</p>'}
+  <div class="actions"><button class="btn quiet" type="button" data-ft="new">Add feature</button></div>
+  <h3 class="sec">Notes</h3>
+  <div class="f" style="display:grid;gap:12px"><label for="n-traits">Species traits<textarea class="notes" id="n-traits">${esc(h.notes.traits)}</textarea></label>
+  <label for="n-feats">Feats<textarea class="notes" id="n-feats">${esc(h.notes.feats)}</textarea></label>
+  <label for="n-equip">Equipment<textarea class="notes" id="n-equip">${esc(h.notes.equip)}</textarea></label>
+  <label for="n-prof">Training and proficiencies<textarea class="notes" id="n-prof">${esc(h.notes.prof)}</textarea></label>
+  <div class="two"><label for="f-species">Species<input id="f-species" type="text" value="${esc(h.species)}" placeholder="Taivari"></label><label for="f-bg">Background<input id="f-bg" type="text" value="${esc(h.bg)}"></label></div></div>
+  <div class="rests"><button class="btn quiet" type="button" id="shShort">Short rest</button><button class="btn solid" type="button" id="shLong">Long rest</button></div>
+  <p class="note">Short rest refills SR features${isPact(c)?' and Pact slots':''}. Long rest refills HP, hit dice, spell slots and all features, and removes one level of exhaustion.</p>`;
+  const S2=()=>{save();renderSheet();};
+  const num=(id,fn)=>$('#'+id).addEventListener('change',e=>{ const v=parseInt(e.target.value,10); if(!isNaN(v)){ fn(v); S2(); } });
+  num('f-ac',v=>h.ac=v-(h.shield?2:0)); num('f-speed',v=>h.speed=Math.max(0,v)); num('f-hpmax',v=>{h.hp.max=Math.max(1,v); h.hp.cur=Math.min(h.hp.cur,h.hp.max);}); num('f-tmp',v=>h.hp.tmp=Math.max(0,v));
+  el.querySelectorAll('[data-ab]').forEach(i=>i.addEventListener('change',e=>{ const v=parseInt(e.target.value,10); if(!isNaN(v)){ h.ab[i.dataset.ab]=Math.max(1,Math.min(30,v)); S2(); } }));
+  el.querySelectorAll('[data-sv]').forEach(b=>b.addEventListener('click',()=>{ h.sv[b.dataset.sv]=!h.sv[b.dataset.sv]; S2(); }));
+  el.querySelectorAll('[data-sk]').forEach(b=>b.addEventListener('click',()=>{ const n=b.dataset.sk; h.sk[n]=((h.sk[n]||0)+1)%3; S2(); }));
+  el.querySelectorAll('[data-exh]').forEach(b=>b.addEventListener('click',()=>{ const i=+b.dataset.exh; h.exh=h.exh===i?i-1:i; S2(); }));
+  el.querySelectorAll('[data-cond]').forEach(b=>b.addEventListener('click',()=>{ const n=b.dataset.cond; h.cond=h.cond.includes(n)?h.cond.filter(x=>x!==n):h.cond.concat(n); S2(); }));
+  el.querySelectorAll('[data-ds]').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.ds; h.ds[k]=b.classList.contains('on')?h.ds[k]-1:h.ds[k]+1; h.ds[k]=Math.max(0,Math.min(3,h.ds[k])); S2(); }));
+  el.querySelectorAll('[data-use]').forEach(b=>b.addEventListener('click',()=>{ const f=h.ft[+b.dataset.use]; f.used=Math.max(0,Math.min(f.max,(f.used||0)+(b.classList.contains('spent')?-1:1))); S2(); }));
+  el.querySelectorAll('button[data-wpn]').forEach(b=>b.addEventListener('click',()=>openItem('wpn',b.dataset.wpn)));
+  el.querySelectorAll('button[data-ft]').forEach(b=>b.addEventListener('click',()=>openItem('ft',b.dataset.ft)));
+  $('#insp').addEventListener('click',()=>{h.insp=!h.insp;S2();});
+  $('#shield').addEventListener('click',()=>{h.shield=!h.shield;S2();});
+  $('#hdUse').addEventListener('click',()=>{ if(h.hd.spent<c.level){ h.hd.spent++; S2(); toast('Hit die spent. Roll d'+die+' '+sgn(mod('con'))+' and heal that much.'); } else toast('No hit dice left'); });
+  const amt=()=>Math.max(0,parseInt($('#hpAmt').value,10)||0);
+  $('#dmg').addEventListener('click',()=>{ let d=amt(); if(!d) return; const t=Math.min(h.hp.tmp,d); h.hp.tmp-=t; d-=t; h.hp.cur=Math.max(0,h.hp.cur-d); S2(); if(h.hp.cur===0) toast(c.name+' is down. Track death saves below.'); else if(c.conc) toast('Took damage while concentrating: make a Constitution save (DC '+Math.max(10,Math.floor(amt()/2))+')'); });
+  $('#heal').addEventListener('click',()=>{ const d=amt(); if(!d) return; h.hp.cur=Math.min(h.hp.max,h.hp.cur+d); if(h.hp.cur>0) h.ds={s:0,f:0}; S2(); });
+  ['traits','feats','equip','prof'].forEach(k=>$('#n-'+k).addEventListener('input',e=>{ h.notes[k]=e.target.value; save(); }));
+  $('#f-species').addEventListener('change',e=>{h.species=e.target.value.trim();S2();}); $('#f-bg').addEventListener('change',e=>{h.bg=e.target.value.trim();S2();});
+  $('#shShort').addEventListener('click',()=>{shortRest(c);S2();toast('Short rest taken');});
+  $('#shLong').addEventListener('click',()=>{longRest(c);S2();toast('Long rest: HP, hit dice, slots and features restored');});
+}
+function openItem(kind,idx){
+  const c=me(), h=sheetOf(c), list=kind==='wpn'?h.wpn:h.ft, isNew=idx==='new', it=isNew?(kind==='wpn'?{n:'',atk:'',dmg:'',notes:''}:{n:'',src:'Class',lvl:c.level,max:0,used:0,rest:'',x:''}):list[+idx];
+  const body=kind==='wpn'?`
+    <label for="i-n">Name<input id="i-n" type="text" value="${esc(it.n)}" placeholder="Longsword"></label>
+    <div class="two"><label for="i-atk">Attack bonus or DC<input id="i-atk" type="text" value="${esc(it.atk)}" placeholder="+5"></label><label for="i-dmg">Damage and type<input id="i-dmg" type="text" value="${esc(it.dmg)}" placeholder="1d8+3 Slashing"></label></div>
+    <label for="i-notes">Notes<input id="i-notes" type="text" value="${esc(it.notes)}" placeholder="Versatile (1d10), Sap"></label>`:`
+    <label for="i-n">Name<input id="i-n" type="text" value="${esc(it.n)}" placeholder="Channel Divinity"></label>
+    <div class="two"><label for="i-src">From<select id="i-src">${['Class','Subclass','Species','Feat'].map(x=>`<option ${x===it.src?'selected':''}>${x}</option>`).join('')}</select></label><label for="i-lvl">Level<input id="i-lvl" type="number" min="1" max="20" value="${it.lvl||''}"></label></div>
+    <div class="two"><label for="i-max">Uses (0 = no limit)<input id="i-max" type="number" min="0" max="20" value="${it.max||0}"></label><label for="i-rest">Refills on<select id="i-rest"><option value="" ${!it.rest?'selected':''}>Nothing</option><option value="sr" ${it.rest==='sr'?'selected':''}>Short or Long rest</option><option value="lr" ${it.rest==='lr'?'selected':''}>Long rest</option></select></label></div>
+    <label for="i-x">What it does<textarea id="i-x">${esc(it.x)}</textarea></label>`;
+  openSheet(`<div class="ph"><div><h2>${isNew?'Add':'Edit'} ${kind==='wpn'?'weapon':'feature'}</h2><div class="sub">${esc(c.name)}</div></div><button class="x" type="button" aria-label="Close">×</button></div>
+  <form class="f" id="itf" novalidate>${body}<p class="err" id="iErr" hidden></p><div class="actions"><button class="btn solid" type="submit">Save</button>${isNew?'':'<button class="btn blood" type="button" id="iDel">Delete</button>'}</div></form>`, p=>{
+    p.querySelector('#itf').addEventListener('submit',ev=>{ ev.preventDefault(); const n=$('#i-n').value.trim(); if(!n){ const er=$('#iErr'); er.textContent='Give it a name.'; er.hidden=false; return; }
+      let o; if(kind==='wpn') o={n,atk:$('#i-atk').value.trim(),dmg:$('#i-dmg').value.trim(),notes:$('#i-notes').value.trim()};
+      else { const mx=Math.max(0,Math.min(20,parseInt($('#i-max').value,10)||0)); o={n,src:$('#i-src').value,lvl:parseInt($('#i-lvl').value,10)||null,max:mx,used:Math.min(it.used||0,mx),rest:$('#i-rest').value,x:$('#i-x').value}; }
+      if(isNew) list.push(o); else list[+idx]=o; save(); closeSheet(); renderSheet(); });
+    p.querySelector('#iDel')?.addEventListener('click',()=>{ list.splice(+idx,1); save(); closeSheet(); renderSheet(); toast('Deleted'); });
+  });
 }
 
 /* ---------- world (Players' Guide) ---------- */
@@ -776,7 +925,7 @@ function openChars(editId){
     <div class="two"><label for="cc">Class<select id="cc">${allClasses().concat(['Other']).map(x=>`<option ${ed&&ed.cls===x?'selected':''}>${esc(x)}</option>`).join('')}</select></label>
     <label for="cl">Level<input id="cl" type="number" min="1" max="20" inputmode="numeric" value="${ed?ed.level:1}"></label></div>
     <label for="ca">Spellcasting ability<select id="ca"><option value="">Class default</option>${Object.entries(ABIL).map(([v,t])=>`<option value="${v}" ${ed&&ed.abil===v?'selected':''}>${t}</option>`).join('')}</select></label>
-    <div class="two"><label for="csc">Ability score<input id="csc" type="number" min="1" max="30" inputmode="numeric" value="${ed?ed.score||10:16}"></label>
+    <div class="two"><label for="csc">Ability score<input id="csc" type="number" min="1" max="30" inputmode="numeric" value="${ed?castStats(ed).sc:16}"></label>
     <label for="cb">Extra bonus<input id="cb" type="number" min="-10" max="10" inputmode="numeric" value="${ed?ed.bonus||0:0}"></label></div>
     <div class="checks"><label for="cfull"><input type="checkbox" id="cfull" ${(ed?(ed.full??defFull(ed.cls)):true)?'checked':''}>Fill the spellbook with the whole class list</label></div>
     <p class="note" style="margin:0">For classes that prepare from their whole list, like Cleric, Druid, Paladin and Ranger. New spells are added as you level up. Turn it off for a Wizard or a class that learns spells one by one.</p>
@@ -797,7 +946,7 @@ function openChars(editId){
       const ab=$('#ca').value||null, sc=Math.max(1,Math.min(30,parseInt($('#csc').value,10)||10)), bo=Math.max(-10,Math.min(10,parseInt($('#cb').value,10)||0));
       const plv=$('#cpl').value.trim(), pl=plv===''?null:Math.max(0,Math.min(60,parseInt(plv,10)||0));
       const fu=$('#cfull').checked; let tgt;
-      if(ed){ Object.assign(ed,{name:n,cls,level:lv,abil:ab,score:sc,bonus:bo,prepLimit:pl,full:fu}); tgt=ed; } else { tgt=Object.assign(newChar(n,cls,lv),{abil:ab,score:sc,bonus:bo,prepLimit:pl,full:fu}); S.chars.push(tgt); S.active=tgt.id; }
+      if(ed){ Object.assign(ed,{name:n,cls,level:lv,abil:ab,score:sc,bonus:bo,prepLimit:pl,full:fu}); if(ed.sheet) ed.sheet.ab[ab||defAbil(cls)]=sc; tgt=ed; } else { tgt=Object.assign(newChar(n,cls,lv),{abil:ab,score:sc,bonus:bo,prepLimit:pl,full:fu}); S.chars.push(tgt); S.active=tgt.id; }
       const added=fu?fillList(tgt,false):0;
       save(); render(); closeSheet(); toast((ed?'Character saved':'Added '+n)+(added?' · '+added+' spells added to the spellbook':''));
     });
@@ -817,7 +966,7 @@ document.addEventListener('click',e=>{
 });
 document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.v)));
 $('#whoBtn').addEventListener('click',()=>openChars(null));
-setTab(['spells','book','slots','brew','world'].includes(S.ui.tab)?S.ui.tab:'spells');
+setTab(['sheet','spells','book','slots','brew','world'].includes(S.ui.tab)?S.ui.tab:'spells');
 })();
 </script>
 <script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}</script>
