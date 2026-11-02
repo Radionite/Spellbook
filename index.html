@@ -85,6 +85,14 @@ ul.spells li{display:flex;align-items:center;gap:8px;border-bottom:1px solid var
 .prep{flex:none;width:44px;height:44px;display:grid;place-items:center;background:none;border:0}
 .prep i{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--gold);display:block;transition:background .15s, box-shadow .15s}
 .prep[aria-pressed="true"] i{background:var(--gold);box-shadow:0 0 10px rgba(224,189,120,.5)}
+.prep.always i{background:transparent;border:0;box-shadow:none;width:auto;height:auto;color:var(--gold-hi);font-style:normal;font-size:20px;line-height:1}
+.prep.always i::before{content:"\2726"}
+.tally{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+.tally div{flex:1 1 6.5rem;border:1px solid var(--line);border-radius:3px;padding:7px 10px;min-width:0}
+.tally span{display:block;font-family:var(--util);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.tally b{font-family:var(--display);font-size:24px;color:var(--gold-hi);font-variant-numeric:tabular-nums}
+.tally .over{border-color:var(--blood)}
+.tally .over b{color:var(--blood-hi)}
 
 .empty{border:1px dashed var(--line);border-radius:3px;padding:22px 18px;text-align:center;color:var(--muted);margin-top:18px}
 .empty b{display:block;font-family:var(--display);font-size:21px;color:var(--pale);font-weight:600;margin-bottom:4px}
@@ -235,6 +243,24 @@ function load(){ try{ const t=localStorage.getItem(KEY); if(t) return JSON.parse
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 const uid=()=>Math.random().toString(36).slice(2,10);
 const ABIL={int:'Intelligence',wis:'Wisdom',cha:'Charisma'};
+// Prepared spells and cantrips by level 1-20, from the SRD 5.2.1 class tables
+const P_FULL=[4,5,6,7,9,10,11,12,14,15,16,16,17,17,18,18,19,20,21,22];
+const PREP={full:P_FULL,sorc:[2,4,6,7,9,10,11,12,14,15,16,16,17,17,18,18,19,20,21,22],half:[2,3,4,5,6,6,7,7,9,9,10,10,11,11,12,12,14,14,15,15],pact:[2,3,4,5,6,7,8,9,10,10,11,11,12,12,13,13,14,14,15,15]};
+const PREPCLS={Bard:'full',Cleric:'full',Druid:'full',Wizard:'full',Sorcerer:'sorc',Paladin:'half',Ranger:'half',Warlock:'pact'};
+const C2=[2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4], C3=[3,3,3,4,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5], C4=[4,4,4,5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,6];
+const CANT={Bard:C2,Druid:C2,Warlock:C2,Cleric:C3,Wizard:C3,Sorcerer:C4};
+const PREPRULES={full:'Like Wizard, Cleric, Druid, Bard',sorc:'Like Sorcerer',half:'Like Paladin, Ranger',pact:'Like Warlock',modlevel:'Ability modifier + level',modhalf:'Ability modifier + half level',none:'No limit'};
+function prepRule(cls){ const k=cclass(cls); if(k) return k.prep||({full:'full',half:'half',pact:'pact',third:'modhalf'}[k.caster]||'none'); return PREPCLS[cls]||'none'; }
+function autoPrep(c){ const r=prepRule(c.cls), L=Math.max(1,Math.min(20,c.level));
+  if(PREP[r]) return PREP[r][L-1];
+  const mod=Math.floor(((c.score||10)-10)/2);
+  if(r==='modlevel') return Math.max(1,mod+L);
+  if(r==='modhalf') return Math.max(1,mod+Math.floor(L/2));
+  return null; }
+function prepLimit(c){ return Number.isInteger(c.prepLimit)?c.prepLimit:autoPrep(c); }
+function cantLimit(c){ const t=CANT[c.cls]; return t?t[Math.max(1,Math.min(20,c.level))-1]:null; }
+const isAlways=(c,id)=>!!(c.always&&c.always[id]);
+const isPrep=(c,id)=>!!(c.known[id]||isAlways(c,id));
 function defAbil(cls){ const k=cclass(cls); if(k&&k.abil) return k.abil; return {Wizard:'int',Cleric:'wis',Druid:'wis',Ranger:'wis'}[cls]||'cha'; }
 const prof=l=>2+Math.floor((l-1)/4);
 const sgn=n=>(n>=0?'+':'')+n;
@@ -245,7 +271,7 @@ function newChar(name,cls,level){ return {id:uid(),name,cls,level,known:{},custo
 function seed(){
   const c=Object.assign(newChar('Example wizard','Wizard',5),{score:17,bonus:0});
   ['fire-bolt','mage-hand','prestidigitation','magic-missile','shield','detect-magic','misty-step','fireball','counterspell','mage-armor'].forEach((id,i)=>{ if(SRD.some(s=>s.id===id)) c.known[id]=i<8; });
-  c.spent[0]=1;
+  c.spent[0]=1; c.always={'detect-magic':true}; c.known['detect-magic']=false;
   return {v:1,chars:[c],active:c.id,brew:[{id:'hb-'+uid(),n:'Brill Anchor',l:1,s:'Abjuration',c:['Cleric','Wizard','Warlock'],t:'Reaction, which you take when a creature you can see within 30 feet is targeted by an effect that would erase or change its memories',r:'30 feet',k:'VS',m:'',d:'1 minute',co:false,ri:false,x:'*Example homebrew spell. Edit or delete it in the Homebrew tab.*\n\nA thread of pale Brill-light ties the target to who it was a moment ago. The target has Advantage on the saving throw against the effect, and for the duration it can\'t lose memories to the fading of the Fadelands.\n\n***Using a Higher-Level Spell Slot.*** You can target one additional creature for each spell slot level above 1.',hb:true}],ui:{tab:'spells'}};
 }
 let S=load()||seed();
@@ -298,8 +324,9 @@ function render(){
 
 function spellLi(s,c,showPrep){
   const known=c&&s.id in c.known;
-  const marks=[s.co?'<span class="mk" title="Concentration">C</span>':'',s.ri?'<span class="mk" title="Ritual">R</span>':'',s.hb?'<span class="mk hb">HB</span>':'',s.ev?'<span class="mk ev" title="Eidolon Vhar">EV</span>':'',(!showPrep&&known)?'<span class="mk inb" title="In your spellbook">'+(c.known[s.id]?'Prep':'Book')+'</span>':''].join('');
-  const prep=showPrep&&s.l>0?`<button class="prep" type="button" data-prep="${esc(s.id)}" aria-pressed="${!!c.known[s.id]}" aria-label="Prepared: ${esc(s.n)}"><i></i></button>`:(showPrep?'<span class="prep" aria-hidden="true"></span>':'');
+  const marks=[s.co?'<span class="mk" title="Concentration">C</span>':'',s.ri?'<span class="mk" title="Ritual">R</span>':'',s.hb?'<span class="mk hb">HB</span>':'',s.ev?'<span class="mk ev" title="Eidolon Vhar">EV</span>':'',(!showPrep&&known)?'<span class="mk inb" title="In your spellbook">'+(isAlways(c,s.id)?'Always':c.known[s.id]?'Prep':'Book')+'</span>':''].join('');
+  const al=c&&isAlways(c,s.id);
+  const prep=showPrep&&s.l>0?`<button class="prep ${al?'always':''}" type="button" data-prep="${esc(s.id)}" aria-pressed="${isPrep(c,s.id)}" aria-label="${al?'Always prepared':'Prepared'}: ${esc(s.n)}"><i></i></button>`:(showPrep?'<span class="prep" aria-hidden="true"></span>':'');
   return `<li><button class="srow" type="button" data-open="${esc(s.id)}"><span class="nm">${esc(s.n)}</span><span class="marks">${marks}</span><span class="meta">${esc(s.l===0?'Cantrip':ORD[s.l])} · ${esc(s.s)} · ${esc(s.t.split(',')[0])} · ${esc(s.r)}</span></button>${prep}</li>`;
 }
 function groupList(list,c,showPrep){
@@ -364,11 +391,14 @@ function renderBook(){
   if(!c){ el.innerHTML='<div class="empty"><b>No character yet</b>Tap the box at the top right to add one.</div>'; return; }
   const ids=Object.keys(c.known).filter(byId);
   const list=ids.map(byId).sort(cmp);
-  const prepN=list.filter(s=>s.l>0&&c.known[s.id]).length, cantN=list.filter(s=>s.l===0).length;
+  const lev=list.filter(s=>s.l>0);
+  const alN=lev.filter(s=>isAlways(c,s.id)).length, prepN=lev.filter(s=>c.known[s.id]&&!isAlways(c,s.id)).length, cantN=list.filter(s=>s.l===0).length;
+  const pl=prepLimit(c), cl=cantLimit(c);
   const onlyPrep=!!S.ui.onlyPrep;
-  const shown=onlyPrep?list.filter(s=>s.l===0||c.known[s.id]):list;
-  el.innerHTML=`<div class="count"><span>${cantN} cantrips · ${prepN} prepared · ${list.length-cantN} leveled spells</span><button class="linkbtn" type="button" id="onlyPrep">${onlyPrep?'Show all':'Prepared only'}</button></div>`+
-    (list.length?groupList(shown,c,true)+'<p class="note">Tap the circle to prepare or unprepare a spell. Tap a name to read it or cast it.</p>':'<div class="empty"><b>Your spellbook is empty</b>Open a spell in All spells and tap “Add to spellbook”.</div>');
+  const shown=onlyPrep?list.filter(s=>s.l===0||isPrep(c,s.id)):list;
+  el.innerHTML=`<div class="tally"><div class="${pl!==null&&prepN>pl?'over':''}"><span>Prepared</span><b>${prepN}${pl!==null?' / '+pl:''}</b></div><div><span>Always prepared</span><b>${alN}</b></div><div class="${cl!==null&&cantN>cl?'over':''}"><span>Cantrips</span><b>${cantN}${cl!==null?' / '+cl:''}</b></div></div>
+  <div class="count"><span>${pl!==null&&prepN>pl?'Too many prepared. Unprepare '+(prepN-pl)+'.':pl!==null?(pl-prepN)+' more can be prepared':'No prepare limit for this class'}</span><button class="linkbtn" type="button" id="onlyPrep">${onlyPrep?'Show all':'Prepared only'}</button></div>`+
+    (list.length?groupList(shown,c,true)+'<p class="note">Tap the circle to prepare or unprepare a spell. ✦ means always prepared, which doesn\'t count toward the limit. Open a spell to change that.</p>':'<div class="empty"><b>Your spellbook is empty</b>Open a spell in All spells and tap “Add to spellbook”.</div>');
   $('#onlyPrep').addEventListener('click',()=>{S.ui.onlyPrep=!onlyPrep;save();renderBook();});
 }
 
@@ -417,7 +447,7 @@ function renderBrew(){
   ${list.length?groupList(list,me(),false):'<div class="empty"><b>No homebrew yet</b>Tap “New spell” to write your first one.</div>'}
   <h3 class="sec">Custom classes</h3>
   <p class="lead">For classes that aren't in the list, like a homebrew or third-party class. Pick how it gets spell slots, then build its spell list. Open any spell and tap the class name under it to add or remove it.</p>
-  ${S.classes.length?`<ul class="chars">${S.classes.map(k=>`<li><button class="pick" type="button" data-kedit="${esc(k.id)}"><div class="n">${esc(k.name)}</div><div class="c">${esc(CASTERS[k.caster])} · ${k.spells.length} spells</div></button><button class="btn quiet" type="button" data-kshow="${esc(k.name)}">Spells</button></li>`).join('')}</ul>`:''}
+  ${S.classes.length?`<ul class="chars">${S.classes.map(k=>`<li><button class="pick" type="button" data-kedit="${esc(k.id)}"><div class="n">${esc(k.name)}</div><div class="c">${esc(CASTERS[k.caster])} · prepares ${esc(PREPRULES[k.prep||'full'].replace(/^Like /,'like ').toLowerCase())} · ${k.spells.length} spells</div></button><button class="btn quiet" type="button" data-kshow="${esc(k.name)}">Spells</button></li>`).join('')}</ul>`:''}
   <div class="actions"><button class="btn quiet" type="button" id="newClass">New class</button></div>
   <h3 class="sec">Share homebrew</h3>
   <p class="lead">Copy your homebrew spells and custom classes as text to send to your players. They paste it below to add the spells to their app.</p>
@@ -467,9 +497,9 @@ function doImport(text){
   let kAdded=0;
   for(const k0 of (Array.isArray(o.classes)?o.classes:[])){
     if(!k0||typeof k0.name!=='string'||!k0.name.trim()||CLASSES.includes(k0.name)) continue;
-    const k={id:'kc-'+uid(),name:k0.name.trim().slice(0,40),caster:CASTERS[k0.caster]?k0.caster:'none',abil:ABIL[k0.abil]?k0.abil:'int',spells:(k0.spells||[]).filter(x=>typeof x==='string')};
+    const k={id:'kc-'+uid(),name:k0.name.trim().slice(0,40),caster:CASTERS[k0.caster]?k0.caster:'none',abil:ABIL[k0.abil]?k0.abil:'int',prep:PREPRULES[k0.prep]?k0.prep:undefined,spells:(k0.spells||[]).filter(x=>typeof x==='string')};
     const ex=S.classes.find(x=>x.name.toLowerCase()===k.name.toLowerCase());
-    if(ex){ ex.caster=k.caster; ex.abil=k.abil; ex.spells=Array.from(new Set(ex.spells.concat(k.spells))); } else S.classes.push(k);
+    if(ex){ ex.caster=k.caster; ex.abil=k.abil; ex.prep=k.prep; ex.spells=Array.from(new Set(ex.spells.concat(k.spells))); } else S.classes.push(k);
     kAdded++;
   }
   if(!good.length&&kAdded){ save(); $('#ioText').value=''; render(); toast(kAdded+' classes imported'); return; }
@@ -510,10 +540,11 @@ function openSpell(id){
   <div class="desc">${md(s.x)}</div>
   <div class="classes">${(()=>{const l=allClasses().filter(x=>inClass(s,x));return l.length?esc(l.join(' · ')):'No class list';})()}</div>
   ${S.classes.length?`<div class="castrow" style="margin-top:10px" aria-label="Custom class lists">${S.classes.map(k=>`<button class="chip" type="button" data-kc="${esc(k.id)}" aria-pressed="${k.spells.includes(s.id)}">${k.spells.includes(s.id)?'✓ ':'+ '}${esc(k.name)}</button>`).join('')}</div>`:''}
-  ${c?`<div class="actions"><button class="btn ${known?'blood':'solid'}" type="button" id="tKnown">${known?'Remove from spellbook':'Add to spellbook'}</button>${known&&s.l>0?`<button class="btn" type="button" id="tPrep">${c.known[s.id]?'Unprepare':'Prepare'}</button>`:''}${s.hb?'<button class="btn quiet" type="button" id="tEdit">Edit</button>':''}</div>`:''}
+  ${c?`<div class="actions"><button class="btn ${known?'blood':'solid'}" type="button" id="tKnown">${known?'Remove from spellbook':'Add to spellbook'}</button>${known&&s.l>0&&!isAlways(c,s.id)?`<button class="btn" type="button" id="tPrep">${c.known[s.id]?'Unprepare':'Prepare'}</button>`:''}${s.l>0?`<button class="btn quiet" type="button" id="tAlways">${isAlways(c,s.id)?'✦ Always prepared: on':'Always prepared'}</button>`:''}${s.hb?'<button class="btn quiet" type="button" id="tEdit">Edit</button>':''}</div>`:''}
   ${cast}`, p=>{
-    p.querySelector('#tKnown')?.addEventListener('click',()=>{ if(known) delete c.known[s.id]; else c.known[s.id]=s.l>0; save(); render(); openSpell(id); toast(known?'Removed from '+c.name:'Added to '+c.name+(s.l>0?' and prepared':'')); });
+    p.querySelector('#tKnown')?.addEventListener('click',()=>{ if(known){ delete c.known[s.id]; if(c.always) delete c.always[s.id]; } else c.known[s.id]=s.l>0; save(); render(); openSpell(id); toast(known?'Removed from '+c.name:'Added to '+c.name+(s.l>0?' and prepared':'')); });
     p.querySelector('#tPrep')?.addEventListener('click',()=>{ c.known[s.id]=!c.known[s.id]; save(); render(); openSpell(id); });
+    p.querySelector('#tAlways')?.addEventListener('click',()=>{ c.always=c.always||{}; if(c.always[s.id]){ delete c.always[s.id]; c.known[s.id]=false; toast(s.n+' is no longer always prepared'); } else { c.always[s.id]=true; c.known[s.id]=false; toast(s.n+' is always prepared'); } save(); render(); openSpell(id); });
     p.querySelector('#tEdit')?.addEventListener('click',()=>openForm(s));
     p.querySelectorAll('[data-kc]').forEach(b=>b.addEventListener('click',()=>{ const k=S.classes.find(x=>x.id===b.dataset.kc); const i=k.spells.indexOf(s.id); if(i>=0) k.spells.splice(i,1); else k.spells.push(s.id); save(); render(); openSpell(id); toast((i>=0?'Removed from ':'Added to ')+k.name+' list'); }));
     p.querySelectorAll('[data-cast]').forEach(b=>b.addEventListener('click',()=>{
@@ -607,7 +638,7 @@ function openForm(s,pre){
     p.querySelector('#bDel')?.addEventListener('click',()=>{
       $('#delConfirm').innerHTML='<p class="err">Delete “'+esc(s.n)+'” for good? It is also removed from every spellbook.</p><div class="actions"><button class="btn blood" type="button" id="bDel2">Yes, delete</button><button class="btn quiet" type="button" id="bKeep">Keep it</button></div>';
       $('#bKeep').addEventListener('click',()=>$('#delConfirm').innerHTML='');
-      $('#bDel2').addEventListener('click',()=>{ S.brew=S.brew.filter(b=>b.id!==s.id); S.chars.forEach(c=>{delete c.known[s.id]; if(c.conc===s.id)c.conc=null;}); save(); closeSheet(); render(); toast('Spell deleted'); });
+      $('#bDel2').addEventListener('click',()=>{ S.brew=S.brew.filter(b=>b.id!==s.id); S.chars.forEach(c=>{delete c.known[s.id]; if(c.always) delete c.always[s.id]; if(c.conc===s.id)c.conc=null;}); save(); closeSheet(); render(); toast('Spell deleted'); });
     });
   });
 }
@@ -619,6 +650,7 @@ function openClassForm(k){
   <form class="f" id="kf" novalidate>
     <label for="kn">Class name<input id="kn" type="text" maxlength="40" value="${esc(e.name)}" placeholder="Veilwarden"></label>
     <label for="ka">Spellcasting ability<select id="ka">${Object.entries(ABIL).map(([v,t])=>`<option value="${v}" ${v===(e.abil||'int')?'selected':''}>${t}</option>`).join('')}</select></label>
+    <label for="kp">Spells you can prepare<select id="kp">${Object.entries(PREPRULES).map(([v,t])=>`<option value="${v}" ${v===(e.prep||'full')?'selected':''}>${t}</option>`).join('')}</select></label>
     <label for="kt">Spell slots<select id="kt">${Object.entries(CASTERS).map(([v,t])=>`<option value="${v}" ${v===e.caster?'selected':''}>${t}</option>`).join('')}</select></label>
     ${k?'':`<label for="kb">Start the spell list from<select id="kb"><option value="">An empty list</option>${base}</select></label>`}
     <p class="err" id="kErr" hidden></p>
@@ -630,8 +662,8 @@ function openClassForm(k){
       const n=$('#kn').value.trim(), er=$('#kErr');
       const clash=allClasses().some(x=>x.toLowerCase()===n.toLowerCase()&&(!k||x!==k.name));
       if(!n||clash){ er.textContent=n?'There is already a class called '+n+'. Pick another name.':'Give the class a name.'; er.hidden=false; $('#kn').focus(); return; }
-      if(k){ S.chars.forEach(c=>{ if(c.cls===k.name) c.cls=n; }); k.name=n; k.caster=$('#kt').value; k.abil=$('#ka').value; }
-      else { const b=$('#kb').value; S.classes.push({id:'kc-'+uid(),name:n,caster:$('#kt').value,abil:$('#ka').value,spells:b?all().filter(s=>s.c.includes(b)).map(s=>s.id):[]}); }
+      if(k){ S.chars.forEach(c=>{ if(c.cls===k.name) c.cls=n; }); k.name=n; k.caster=$('#kt').value; k.abil=$('#ka').value; k.prep=$('#kp').value; }
+      else { const b=$('#kb').value; S.classes.push({id:'kc-'+uid(),name:n,caster:$('#kt').value,abil:$('#ka').value,prep:$('#kp').value,spells:b?all().filter(s=>s.c.includes(b)).map(s=>s.id):[]}); }
       save(); render(); closeSheet(); toast(k?'Class saved':'Added '+n+'. Open spells to build its list.');
     });
     p.querySelector('#kDel')?.addEventListener('click',()=>{
@@ -656,7 +688,8 @@ function openChars(editId){
     <label for="ca">Spellcasting ability<select id="ca"><option value="">Class default</option>${Object.entries(ABIL).map(([v,t])=>`<option value="${v}" ${ed&&ed.abil===v?'selected':''}>${t}</option>`).join('')}</select></label>
     <div class="two"><label for="csc">Ability score<input id="csc" type="number" min="1" max="30" inputmode="numeric" value="${ed?ed.score||10:16}"></label>
     <label for="cb">Extra bonus<input id="cb" type="number" min="-10" max="10" inputmode="numeric" value="${ed?ed.bonus||0:0}"></label></div>
-    <p class="note" style="margin:0">Extra bonus is for items or features that add to your spell save DC and attack, like a +1 wand.</p>
+    <label for="cpl">Prepared spell limit<input id="cpl" type="number" min="0" max="60" inputmode="numeric" value="${ed&&Number.isInteger(ed.prepLimit)?ed.prepLimit:''}" placeholder="${ed&&autoPrep(ed)!==null?'Automatic: '+autoPrep(ed):'Automatic from class and level'}"></label>
+    <p class="note" style="margin:0">Leave the limit empty to use the class table. Extra bonus is for items or features that add to your spell save DC and attack, like a +1 wand.</p>
     <p class="err" id="cErr" hidden></p>
     <div class="actions"><button class="btn solid" type="submit">${ed?'Save changes':'Add character'}</button>${ed?'<button class="btn quiet" type="button" id="cNew">New character instead</button><button class="btn blood" type="button" id="cDel">Delete</button>':''}</div>
     <div id="cConfirm"></div>
@@ -669,7 +702,8 @@ function openChars(editId){
       const n=$('#cn').value.trim(), cls=$('#cc').value, lv=Math.max(1,Math.min(20,parseInt($('#cl').value,10)||1));
       if(!n){ const er=$('#cErr'); er.textContent='Give the character a name.'; er.hidden=false; $('#cn').focus(); return; }
       const ab=$('#ca').value||null, sc=Math.max(1,Math.min(30,parseInt($('#csc').value,10)||10)), bo=Math.max(-10,Math.min(10,parseInt($('#cb').value,10)||0));
-      if(ed){ Object.assign(ed,{name:n,cls,level:lv,abil:ab,score:sc,bonus:bo}); } else { const c=Object.assign(newChar(n,cls,lv),{abil:ab,score:sc,bonus:bo}); S.chars.push(c); S.active=c.id; }
+      const plv=$('#cpl').value.trim(), pl=plv===''?null:Math.max(0,Math.min(60,parseInt(plv,10)||0));
+      if(ed){ Object.assign(ed,{name:n,cls,level:lv,abil:ab,score:sc,bonus:bo,prepLimit:pl}); } else { const c=Object.assign(newChar(n,cls,lv),{abil:ab,score:sc,bonus:bo,prepLimit:pl}); S.chars.push(c); S.active=c.id; }
       save(); render(); closeSheet(); toast(ed?'Character saved':'Added '+n);
     });
     p.querySelector('#cDel')?.addEventListener('click',()=>{
@@ -683,7 +717,7 @@ function openChars(editId){
 /* ---------- global events ---------- */
 document.addEventListener('click',e=>{
   const o=e.target.closest('[data-open]'); if(o&&!o.closest('#panel')){ openSpell(o.dataset.open); return; }
-  const p=e.target.closest('[data-prep]'); if(p){ const c=me(); c.known[p.dataset.prep]=!c.known[p.dataset.prep]; save(); render(); }
+  const p=e.target.closest('[data-prep]'); if(p){ const c=me(), id=p.dataset.prep; if(isAlways(c,id)){ toast('Always prepared. Open the spell to change it.'); return; } c.known[id]=!c.known[id]; save(); render(); }
 });
 document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.v)));
 $('#whoBtn').addEventListener('click',()=>openChars(null));
