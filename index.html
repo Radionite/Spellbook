@@ -632,10 +632,10 @@ function renderSheet(){
     <div class="cell hp"><div><span class="lab">Hit points</span><div class="big">${h.hp.cur}<span style="font-size:18px;color:var(--muted)"> / ${h.hp.max}</span>${h.hp.tmp?`<span style="font-size:17px;color:var(--veil)"> +${h.hp.tmp} temp</span>`:''}</div><div class="bar"><i style="width:${hpw}%"></i></div></div>
       <div class="hpctl"><input id="hpAmt" type="number" inputmode="numeric" min="0" placeholder="0" aria-label="Amount"><button class="btn blood" type="button" id="dmg">Damage</button><button class="btn" type="button" id="heal">Heal</button></div></div>
     <div class="cell"><span class="lab">Armor class</span><input class="num" id="f-ac" type="number" inputmode="numeric" value="${h.ac+(h.shield?2:0)}" aria-label="Armor class"><button class="sv" type="button" id="shield"><span class="dot ${h.shield?'on':''}"></span>Shield +2</button></div>
-    <div class="cell"><span class="lab">Initiative</span><div class="big">${sgn(mod('dex'))}</div></div>
+    <div class="cell"><span class="lab">Initiative</span><input class="num" id="f-init" type="text" inputmode="numeric" value="${sgn(mod('dex')+(h.initAdj||0))}" aria-label="Initiative"></div>
     <div class="cell"><span class="lab">Speed</span><input class="num" id="f-speed" type="number" inputmode="numeric" value="${h.speed}" aria-label="Speed"></div>
     <div class="cell"><span class="lab">Proficiency</span><div class="big">${sgn(pb)}</div></div>
-    <div class="cell"><span class="lab">Passive Perception</span><div class="big">${perc}</div></div>
+    <div class="cell"><span class="lab">Passive Perception</span><input class="num" id="f-pass" type="number" inputmode="numeric" value="${perc+(h.passAdj||0)}" aria-label="Passive Perception"></div>
     <div class="cell"><span class="lab">Hit dice d${die}</span><div class="big">${c.level-h.hd.spent}<span style="font-size:16px;color:var(--muted)">/${c.level}</span></div><div class="trio"><button class="linkbtn" type="button" id="hdUse">Spend one</button></div></div>
     <div class="cell"><span class="lab">Max HP</span><input class="num sm" id="f-hpmax" type="number" inputmode="numeric" value="${h.hp.max}" aria-label="Max HP"></div>
     <div class="cell"><span class="lab">Temp HP</span><input class="num sm" id="f-tmp" type="number" inputmode="numeric" value="${h.hp.tmp}" aria-label="Temp HP"></div>
@@ -666,7 +666,7 @@ function renderSheet(){
   <p class="note">Short rest refills SR features${isPact(c)?' and Pact slots':''}. Long rest refills HP, hit dice, spell slots and all features, and removes one level of exhaustion.</p>`;
   const S2=()=>{save();renderSheet();};
   const num=(id,fn)=>$('#'+id).addEventListener('change',e=>{ const v=parseInt(e.target.value,10); if(!isNaN(v)){ fn(v); S2(); } });
-  num('f-ac',v=>h.ac=v-(h.shield?2:0)); num('f-speed',v=>h.speed=Math.max(0,v)); num('f-hpmax',v=>{h.hp.max=Math.max(1,v); h.hp.cur=Math.min(h.hp.cur,h.hp.max);}); num('f-tmp',v=>h.hp.tmp=Math.max(0,v));
+  num('f-ac',v=>h.ac=v-(h.shield?2:0)); num('f-init',v=>h.initAdj=v-mod('dex')); num('f-pass',v=>h.passAdj=v-perc); num('f-speed',v=>h.speed=Math.max(0,v)); num('f-hpmax',v=>{h.hp.max=Math.max(1,v); h.hp.cur=Math.min(h.hp.cur,h.hp.max);}); num('f-tmp',v=>h.hp.tmp=Math.max(0,v));
   el.querySelectorAll('[data-ab]').forEach(i=>i.addEventListener('change',e=>{ const v=parseInt(e.target.value,10); if(!isNaN(v)){ h.ab[i.dataset.ab]=Math.max(1,Math.min(30,v)); S2(); } }));
   el.querySelectorAll('[data-sv]').forEach(b=>b.addEventListener('click',()=>{ h.sv[b.dataset.sv]=!h.sv[b.dataset.sv]; S2(); }));
   el.querySelectorAll('[data-sk]').forEach(b=>b.addEventListener('click',()=>{ const n=b.dataset.sk; h.sk[n]=((h.sk[n]||0)+1)%3; S2(); }));
