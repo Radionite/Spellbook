@@ -41,8 +41,8 @@ section.view{padding-block:14px 8px}
 
 /* bottom nav */
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--vellum);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
-nav.tabs .in{max-width:44rem;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
-nav.tabs button{height:var(--nav-h);background:none;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);font-family:var(--util);font-size:12px;letter-spacing:.06em}
+nav.tabs .in{max-width:44rem;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav.tabs button{min-width:0;height:var(--nav-h);background:none;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);font-family:var(--util);font-size:12px;letter-spacing:.06em}
 nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5}
 nav.tabs button[aria-selected="true"]{color:var(--gold-hi)}
 nav.tabs button[aria-selected="true"] svg{filter:drop-shadow(0 0 6px rgba(224,189,120,.45))}
@@ -166,6 +166,30 @@ legend{font-family:var(--util);font-size:11.5px;letter-spacing:.12em;text-transf
 h3.sec{font-family:var(--display);font-weight:600;font-size:22px;color:var(--gold);margin:22px 0 4px;letter-spacing:.04em}
 .lead{color:var(--muted);margin:0 0 8px}
 textarea.io{width:100%;min-height:7rem;background:var(--void);border:1px solid var(--line);border-radius:3px;padding:8px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--ink)}
+.lore p{margin:0 0 .75em}
+.lore .lede{font-style:italic;color:var(--muted);font-size:18px}
+.lore b,.lore strong{color:var(--pale);font-weight:600}
+.lore table{border-collapse:collapse;font-size:15px;margin:0 0 1em;width:100%}
+.lore th,.lore td{text-align:left;padding:5px 10px 5px 0;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.lore th{font-family:var(--util);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-hi);font-weight:600}
+.lore .tw{overflow-x:auto}
+.lore .box{border:1px solid var(--line);background:var(--vellum-hi);padding:10px 14px;border-radius:3px;margin:0 0 1em}
+.lore .box h4{margin:0 0 6px;font-family:var(--display);font-size:19px;color:var(--gold-hi)}
+.lore .trait{margin:0 0 .7em}
+.lore dl.stat{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:0 0 1em;border-block:1px solid var(--line);padding:8px 0}
+.lore dl.stat dt{font-family:var(--util);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding-top:3px}
+.lore dl.stat dd{margin:0}
+.lore img.pic{display:block;width:100%;max-width:100%;height:auto;border:1px solid var(--line);margin:4px 0 14px;border-radius:2px}
+button.lk{background:none;border:0;padding:0;font:inherit;font-weight:600;color:var(--gold-hi);text-decoration:underline;text-decoration-color:rgba(224,189,120,.4);text-underline-offset:3px;cursor:pointer}
+.kick{font-family:var(--util);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.chap{margin-top:18px}
+.chap h3{font-family:var(--display);font-weight:600;font-size:21px;color:var(--gold);margin:0 0 2px;padding-bottom:3px;border-bottom:1px solid var(--line);letter-spacing:.04em}
+.lrow{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line-soft);padding:10px 0;font-family:var(--display);font-weight:600;font-size:19px;color:var(--pale)}
+.lrow small{display:block;font-family:var(--body);font-weight:400;font-size:15px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mapcard{display:block;width:100%;padding:0;border:1px solid var(--line);background:var(--vellum);border-radius:3px;overflow:hidden;margin-top:14px;text-align:left}
+.mapcard img{display:block;width:100%;max-width:100%;aspect-ratio:16/7;object-fit:cover;object-position:50% 45%}
+.mapcard span{display:block;padding:8px 12px;font-family:var(--display);font-weight:600;font-size:19px;color:var(--gold-hi)}
+mark{background:rgba(201,164,90,.28);color:var(--pale);border-radius:2px;padding:0 1px}
 .toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:60;background:var(--pale);color:var(--void);font-family:var(--util);font-weight:600;font-size:14px;padding:9px 16px;border-radius:3px;box-shadow:0 6px 24px rgba(0,0,0,.5);max-width:calc(100% - 32px)}
 </style>
 
@@ -179,12 +203,14 @@ textarea.io{width:100%;min-height:7rem;background:var(--void);border:1px solid v
   <section class="view wrap" id="v-book" hidden></section>
   <section class="view wrap" id="v-slots" hidden></section>
   <section class="view wrap" id="v-brew" hidden></section>
+  <section class="view wrap" id="v-world" hidden></section>
 </main>
 
 <nav class="tabs" aria-label="Sections"><div class="in" role="tablist">
   <button type="button" role="tab" data-v="spells" aria-selected="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>All spells</button>
   <button type="button" role="tab" data-v="book" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5c-.8 0-1.5-.7-1.5-1.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg>Spellbook</button>
   <button type="button" role="tab" data-v="slots" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 3l5 9-5 9-5-9z"/><path d="M12 3v18"/></svg>Slots</button>
+  <button type="button" role="tab" data-v="world" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.6 2.4 3.8 5.2 3.8 8.5s-1.2 6.1-3.8 8.5c-2.6-2.4-3.8-5.2-3.8-8.5s1.2-6.1 3.8-8.5z"/></svg>World</button>
   <button type="button" role="tab" data-v="brew" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M15 4l5 5L9 20H4v-5z"/><path d="M13 6l5 5"/></svg>Homebrew</button>
 </div></nav>
 
@@ -193,6 +219,9 @@ textarea.io{width:100%;min-height:7rem;background:var(--void);border:1px solid v
 
 <script>
 const SRD = /*SPELLS*/[];
+// The world: entries from the Players' Guide (player-safe only), and their pictures
+const LORE = /*LORE*/[];
+const LOREIMG = /*LOREIMG*/{};
 // Built-in Eidolon Vhar spells, shared with every player through app updates
 const CAMPAIGN = /*CAMPAIGN*/[].map(s=>Object.assign({},s,{ev:true}));
 (function(){
@@ -311,7 +340,7 @@ function md(src){
 function setTab(v){
   S.ui.tab=v; save();
   document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v===v)));
-  ['spells','book','slots','brew'].forEach(k=>$('#v-'+k).hidden=k!==v);
+  ['spells','book','slots','brew','world'].forEach(k=>$('#v-'+k).hidden=k!==v);
   render(); window.scrollTo(0,0);
 }
 function render(){
@@ -320,7 +349,7 @@ function render(){
   $('#whoName').textContent=c?c.name:'No character';
   $('#whoCls').textContent=c?c.cls+' · level '+c.level:'Tap to add';
   const v=S.ui.tab;
-  if(v==='spells') renderSpells(); else if(v==='book') renderBook(); else if(v==='slots') renderSlots(); else renderBrew();
+  if(v==='spells') renderSpells(); else if(v==='book') renderBook(); else if(v==='slots') renderSlots(); else if(v==='world') renderWorld(); else renderBrew();
 }
 
 function spellLi(s,c,showPrep){
@@ -517,6 +546,53 @@ function doImport(text){
 }
 function normBrew(s){
   return {id:String(s.id||'hb-'+uid()).startsWith('hb-')?String(s.id):'hb-'+uid(),n:String(s.n).slice(0,80),l:s.l,s:SCHOOLS.includes(s.s)?s.s:'Evocation',c:(s.c||[]).filter(x=>CLASSES.includes(x)),t:String(s.t||'Action'),r:String(s.r||'Self'),k:String(s.k||''),m:String(s.m||''),d:String(s.d||'Instantaneous'),co:!!s.co,ri:!!s.ri,x:String(s.x||''),hb:true};
+}
+
+/* ---------- world (Players' Guide) ---------- */
+const LKEYS=[]; LORE.forEach(e=>(e.k||[]).forEach(k=>LKEYS.push([k.toLowerCase(),e.id])));
+// later entries win (city pages over the short land notes)
+const LKMAP=new Map(LKEYS);
+const plain=h=>String(h||'').replace(/<[^>]+>/g,' ').replace(/&amp;/g,'&').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();
+LORE.forEach(e=>{ e.txt=plain(e.h); });
+function loreById(id){ return LORE.find(e=>e.id===id); }
+const WF={q:''};
+function renderWorld(){
+  const el=$('#v-world');
+  if(!el.dataset.built){
+    el.innerHTML=`<div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="wq" type="search" placeholder="Search the world and spells" autocomplete="off" aria-label="Search the world and spells"></div><div id="wlist"></div>`;
+    el.dataset.built='1';
+    $('#wq').addEventListener('input',e=>{WF.q=e.target.value;listWorld();});
+  }
+  listWorld();
+}
+function snippet(t,q){ const i=t.toLowerCase().indexOf(q); if(i<0) return esc(t.slice(0,110))+(t.length>110?'…':''); const a=Math.max(0,i-45), b=Math.min(t.length,i+q.length+65);
+  return (a>0?'…':'')+esc(t.slice(a,i))+'<mark>'+esc(t.slice(i,i+q.length))+'</mark>'+esc(t.slice(i+q.length,b))+(b<t.length?'…':''); }
+function listWorld(){
+  const q=WF.q.trim().toLowerCase(), box=$('#wlist');
+  if(!q){
+    const chs=[]; LORE.forEach(e=>{ if(e.term) return; let c=chs.find(x=>x.n===e.ch); if(!c){ c={n:e.ch,e:[]}; chs.push(c);} c.e.push(e); });
+    const map=LOREIMG['guide-map.jpg']?`<button class="mapcard" type="button" data-lore="the-lands-and-who-rules-them"><img src="${LOREIMG['guide-map.jpg']}" alt="Map of Eidolon Vhar"><span>The map and who rules it</span></button>`:'';
+    box.innerHTML=map+chs.map(c=>`<div class="chap"><h3>${esc(c.n)}</h3>${c.e.map(e=>`<button class="lrow" type="button" data-lore="${esc(e.id)}">${esc(e.t===c.n?'Overview':e.t)}<small>${esc(e.txt.slice(0,90))}</small></button>`).join('')}</div>`).join('')+
+      '<p class="note" style="margin-top:18px">From the Eidolon Vhar Player\'s Guide. Everything here is common knowledge, or at least common rumour. Not all of it is true.</p>';
+    return;
+  }
+  const lt=LORE.filter(e=>e.t.toLowerCase().includes(q)), lx=LORE.filter(e=>!e.t.toLowerCase().includes(q)&&e.txt.toLowerCase().includes(q));
+  const sp=all().filter(s=>s.n.toLowerCase().includes(q)||s.x.toLowerCase().includes(q)).sort((a,b)=>(b.n.toLowerCase().includes(q)-a.n.toLowerCase().includes(q))||cmp(a,b));
+  const lore=lt.concat(lx);
+  box.innerHTML=`<div class="count"><span>${lore.length} in the world · ${sp.length} spells</span></div>`+
+    (lore.length?`<div class="chap"><h3>The world</h3>${lore.map(e=>`<button class="lrow" type="button" data-lore="${esc(e.id)}"><span class="kick">${esc(e.ch)}</span><br>${esc(e.t)}<small style="white-space:normal">${snippet(e.txt,q)}</small></button>`).join('')}</div>`:'')+
+    (sp.length?`<div class="chap"><h3>Spells</h3><ul class="spells">${sp.slice(0,40).map(s=>spellLi(s,me(),false)).join('')}</ul>${sp.length>40?'<p class="note">Showing 40. Search in All spells for the rest.</p>':''}</div>`:'')+
+    (!lore.length&&!sp.length?'<div class="empty"><b>Nothing found</b>Try a shorter word, like “veil” or “brill”.</div>':'');
+}
+function linkify(root,selfId){
+  root.querySelectorAll('b,strong').forEach(b=>{ const t=b.textContent.trim().toLowerCase().replace(/^the /,''); const id=LKMAP.get(t)||LKMAP.get(t.replace(/s$/,''));
+    if(id&&id!==selfId){ const k=document.createElement('button'); k.type='button'; k.className='lk'; k.dataset.lore=id; k.textContent=b.textContent; b.replaceWith(k); } });
+  root.querySelectorAll('table').forEach(t=>{ const w=document.createElement('div'); w.className='tw'; t.replaceWith(w); w.appendChild(t); });
+}
+function openLore(id){
+  const e=loreById(id); if(!e) return;
+  const pic=e.img&&LOREIMG[e.img]?`<img class="pic" src="${LOREIMG[e.img]}" alt="${esc(e.t)}">`:'';
+  openSheet(`<div class="ph"><div><div class="kick">${esc(e.ch)}</div><h2>${esc(e.t)}</h2></div><button class="x" type="button" aria-label="Close">×</button></div><div class="lore" style="margin-top:12px">${pic}${e.h}</div>`, p=>linkify(p.querySelector('.lore'),e.id));
 }
 
 /* ---------- sheets ---------- */
@@ -725,11 +801,12 @@ function openChars(editId){
 
 /* ---------- global events ---------- */
 document.addEventListener('click',e=>{
+  const lo=e.target.closest('[data-lore]'); if(lo){ openLore(lo.dataset.lore); return; }
   const o=e.target.closest('[data-open]'); if(o&&!o.closest('#panel')){ openSpell(o.dataset.open); return; }
   const p=e.target.closest('[data-prep]'); if(p){ const c=me(), id=p.dataset.prep; if(isAlways(c,id)){ toast('Always prepared. Open the spell to change it.'); return; } c.known[id]=!c.known[id]; save(); render(); }
 });
 document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.v)));
 $('#whoBtn').addEventListener('click',()=>openChars(null));
-setTab(['spells','book','slots','brew'].includes(S.ui.tab)?S.ui.tab:'spells');
+setTab(['spells','book','slots','brew','world'].includes(S.ui.tab)?S.ui.tab:'spells');
 })();
 </script>

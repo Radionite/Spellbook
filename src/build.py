@@ -8,6 +8,14 @@ core=core.replace('/*SPELLS*/[]',data)
 camp=open(os.path.join(src,'campaign.json')).read().replace('</','<\\/')
 core=core.replace('/*CAMPAIGN*/[]',camp.strip())
 ver=sys.argv[3] if len(sys.argv)>3 else '1'
+import base64
+lore=open(os.path.join(src,'lore','lore.json')).read().replace('</','<\\/')
+core=core.replace('/*LORE*/[]',lore.strip())
+imgs={}
+imgdir=os.path.join(src,'lore','img')
+for f in sorted(os.listdir(imgdir)):
+  imgs[f]='data:image/jpeg;base64,'+base64.b64encode(open(os.path.join(imgdir,f),'rb').read()).decode()
+core=core.replace('/*LOREIMG*/{}',json.dumps(imgs))
 # artifact preview version: body content only
 open(os.path.join(src,'artifact.html'),'w').write(core)
 # icon: gold diamond on void, with a thin ring
