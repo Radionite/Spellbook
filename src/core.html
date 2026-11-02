@@ -1,0 +1,551 @@
+<title>Eidolon Vhar Spellbook</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#0b0a0d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<style>
+/* Layout: one candlelit column, a gilt header above, a thumb-reach tab bar below; spells read like grimoire entries. Single dark look by choice. */
+:root{
+  --void:#0b0a0d; --vellum:#15131a; --vellum-hi:#1d1a23; --ink:#d9d2c3; --muted:#9d927c;
+  --gold:#c9a45a; --gold-hi:#e0bd78; --pale:#ecd9b0; --blood:#8a3b2a; --blood-hi:#e09a7f;
+  --veil:#7fa08a; --line:rgba(201,164,90,.28); --line-soft:rgba(201,164,90,.14);
+  --display:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+  --body:'EB Garamond',Georgia,'Times New Roman',serif;
+  --util:'IBM Plex Sans Condensed','Arial Narrow',system-ui,sans-serif;
+  --nav-h:62px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+html{background:var(--void)}
+body{margin:0;background:var(--void);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--void)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
+.wrap{max-width:44rem;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* header */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:linear-gradient(var(--void) 70%,rgba(11,10,13,.92));border-bottom:1px solid var(--line-soft)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:10px 9px}
+.brand{min-width:0}
+.brand .k{font-family:var(--util);font-size:10.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--muted)}
+.brand h1{margin:0;font-family:var(--display);font-weight:700;font-size:23px;line-height:1.05;color:var(--gold);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who{flex:none;max-width:52%;display:flex;flex-direction:column;align-items:flex-end;background:none;border:1px solid var(--line);border-radius:3px;padding:5px 10px;text-align:right}
+.who .n{font-family:var(--display);font-weight:600;font-size:17px;color:var(--pale);line-height:1.1;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who .c{font-family:var(--util);font-size:11px;letter-spacing:.08em;color:var(--muted)}
+
+main{padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 24px)}
+section.view{padding-block:14px 8px}
+
+/* bottom nav */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--vellum);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+nav.tabs .in{max-width:44rem;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+nav.tabs button{height:var(--nav-h);background:none;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);font-family:var(--util);font-size:12px;letter-spacing:.06em}
+nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5}
+nav.tabs button[aria-selected="true"]{color:var(--gold-hi)}
+nav.tabs button[aria-selected="true"] svg{filter:drop-shadow(0 0 6px rgba(224,189,120,.45))}
+
+/* search and filters */
+.search{position:relative}
+.search input{width:100%;background:var(--vellum);border:1px solid var(--line);border-radius:3px;padding:11px 12px 11px 40px;font-size:17px}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:1.6}
+.levels{display:flex;gap:6px;overflow-x:auto;padding-block:12px 4px;scrollbar-width:none}
+.levels::-webkit-scrollbar{display:none}
+.chip{flex:none;min-width:38px;height:36px;padding:0 10px;border:1px solid var(--line);background:transparent;border-radius:18px;font-family:var(--util);font-size:13px;letter-spacing:.04em;color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--gold);color:var(--void);border-color:var(--gold)}
+.frow{display:flex;flex-wrap:wrap;gap:8px;padding-block:8px 4px;align-items:center}
+.frow select{background:var(--vellum);border:1px solid var(--line);border-radius:3px;padding:7px 8px;font-family:var(--util);font-size:13px;max-width:100%}
+.count{font-family:var(--util);font-size:12px;color:var(--muted);letter-spacing:.06em;padding-block:8px 2px;display:flex;justify-content:space-between;gap:8px}
+.linkbtn{background:none;border:0;padding:0;color:var(--gold-hi);font-family:var(--util);font-size:12px;letter-spacing:.06em;text-decoration:underline;text-underline-offset:3px}
+
+/* spell list */
+.lvhead{font-family:var(--display);font-weight:600;color:var(--gold);font-size:19px;letter-spacing:.06em;margin:18px 0 2px;padding-bottom:3px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline}
+.lvhead small{font-family:var(--util);font-size:11.5px;color:var(--muted);letter-spacing:.08em}
+ul.spells{list-style:none;margin:0;padding:0}
+ul.spells li{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line-soft)}
+.srow{flex:1;min-width:0;text-align:left;background:none;border:0;padding:10px 0;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline}
+.srow .nm{font-family:var(--display);font-weight:600;font-size:19.5px;line-height:1.15;color:var(--pale);min-width:0;overflow-wrap:anywhere}
+.srow .meta{grid-column:1/-1;font-family:var(--util);font-size:12.5px;color:var(--muted);letter-spacing:.03em}
+.marks{display:flex;gap:4px}
+.mk{font-family:var(--util);font-size:10.5px;font-weight:600;letter-spacing:.06em;border:1px solid var(--line);color:var(--gold-hi);padding:1px 5px;border-radius:2px;line-height:1.4}
+.mk.hb{border-color:rgba(127,160,138,.6);color:var(--veil)}
+.mk.ev{border-color:var(--blood);color:var(--blood-hi)}
+.mk.inb{border-color:var(--gold);background:rgba(201,164,90,.14)}
+.prep{flex:none;width:44px;height:44px;display:grid;place-items:center;background:none;border:0}
+.prep i{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--gold);display:block;transition:background .15s, box-shadow .15s}
+.prep[aria-pressed="true"] i{background:var(--gold);box-shadow:0 0 10px rgba(224,189,120,.5)}
+
+.empty{border:1px dashed var(--line);border-radius:3px;padding:22px 18px;text-align:center;color:var(--muted);margin-top:18px}
+.empty b{display:block;font-family:var(--display);font-size:21px;color:var(--pale);font-weight:600;margin-bottom:4px}
+
+/* sheet (spell detail, forms) */
+.sheet{position:fixed;inset:0;z-index:40;background:rgba(5,4,7,.72);display:flex;align-items:flex-end;justify-content:center}
+.sheet .panel{width:100%;max-width:44rem;max-height:calc(100% - env(safe-area-inset-top,0px) - 24px);overflow-y:auto;background:var(--vellum);border-top:1px solid var(--gold);border-radius:6px 6px 0 0;padding:18px max(18px,env(safe-area-inset-right,0px)) calc(22px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));box-shadow:0 -10px 40px rgba(0,0,0,.6)}
+@media (prefers-reduced-motion:no-preference){.sheet .panel{animation:rise .2s ease-out}@keyframes rise{from{transform:translateY(24px);opacity:.6}}}
+.ph{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.ph h2{margin:0;font-family:var(--display);font-weight:700;font-size:30px;line-height:1.05;color:var(--gold);text-wrap:balance;overflow-wrap:anywhere}
+.ph .sub{font-style:italic;color:var(--muted);margin-top:2px}
+.x{flex:none;width:40px;height:40px;border:1px solid var(--line);background:none;border-radius:50%;font-size:22px;line-height:1;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;margin:14px 0;padding:12px 0;border-block:1px solid var(--line)}
+.stats div{min-width:0}
+.stats dt{font-family:var(--util);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.stats dd{margin:0;color:var(--pale);overflow-wrap:anywhere}
+.stats .wide{grid-column:1/-1}
+.desc p{margin:0 0 .7em}
+.desc strong,.desc b{color:var(--pale)}
+.desc em{color:var(--pale)}
+.desc ul{margin:0 0 .7em;padding-left:1.2em}
+.tbl{overflow-x:auto;margin:0 0 .9em}
+.tbl table{border-collapse:collapse;font-size:15px;min-width:60%}
+.tbl th,.tbl td{text-align:left;padding:4px 12px 4px 0;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.tbl th{font-family:var(--util);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-hi);font-weight:600}
+.classes{font-family:var(--util);font-size:12.5px;color:var(--muted);letter-spacing:.04em;margin-top:6px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.btn{min-height:44px;padding:0 16px;border-radius:3px;border:1px solid var(--gold);background:transparent;color:var(--gold-hi);font-family:var(--util);font-weight:600;font-size:14px;letter-spacing:.06em}
+.btn.solid{background:var(--gold);color:var(--void)}
+.btn.blood{border-color:var(--blood);color:var(--blood-hi)}
+.btn.quiet{border-color:var(--line);color:var(--ink)}
+.btn:disabled{opacity:.4}
+.castrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.note{font-size:14px;color:var(--muted);font-style:italic}
+.attr{font-size:13.5px;color:var(--muted);margin-top:18px;border-top:1px solid var(--line-soft);padding-top:10px}
+.attr a{color:var(--muted)}
+
+/* slots */
+.conc{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--veil);background:rgba(127,160,138,.08);padding:10px 12px;border-radius:3px;margin-bottom:14px}
+.conc .t{font-family:var(--util);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--veil)}
+.conc .s{font-family:var(--display);font-size:20px;font-weight:600;color:var(--pale)}
+.slotrow{display:grid;grid-template-columns:3.2rem 1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line-soft)}
+.slotrow .lv{font-family:var(--display);font-weight:700;font-size:22px;color:var(--gold)}
+.slotrow .lv small{display:block;font-family:var(--util);font-size:10px;letter-spacing:.14em;color:var(--muted);font-weight:500}
+.pips{display:flex;flex-wrap:wrap;gap:6px}
+.pip{width:34px;height:34px;border:0;background:none;padding:0;display:grid;place-items:center}
+.pip i{width:24px;height:24px;transform:rotate(45deg);border:1.5px solid var(--gold);background:var(--gold);box-shadow:0 0 9px rgba(224,189,120,.4);display:block;transition:background .15s,box-shadow .15s}
+.pip.spent i{background:transparent;box-shadow:none;border-color:rgba(201,164,90,.45)}
+.slotrow .ct{font-family:var(--util);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.rests{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.edits{display:grid;grid-template-columns:repeat(auto-fill,minmax(5.2rem,1fr));gap:8px;margin-top:10px}
+.edits label{display:flex;flex-direction:column;font-family:var(--util);font-size:11px;letter-spacing:.1em;color:var(--muted)}
+.edits input{width:100%;background:var(--void);border:1px solid var(--line);border-radius:3px;padding:6px 8px;font-variant-numeric:tabular-nums}
+
+/* forms */
+form.f{display:grid;gap:12px;margin-top:14px}
+.f label{display:grid;gap:4px;font-family:var(--util);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.f input[type=text],.f input[type=number],.f select,.f textarea{background:var(--void);border:1px solid var(--line);border-radius:3px;padding:9px 10px;font-family:var(--body);font-size:16.5px;letter-spacing:0;text-transform:none;color:var(--ink);width:100%}
+.f textarea{min-height:9rem;resize:vertical;line-height:1.45}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.checks{display:flex;flex-wrap:wrap;gap:6px 14px}
+.checks label{display:flex;align-items:center;gap:6px;text-transform:none;letter-spacing:.02em;font-size:14px;color:var(--ink)}
+.checks input{width:18px;height:18px;accent-color:var(--gold)}
+.err{color:var(--blood-hi);font-size:15px}
+fieldset{border:1px solid var(--line-soft);border-radius:3px;padding:8px 10px 10px;margin:0}
+legend{font-family:var(--util);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:0 4px}
+
+.chars{list-style:none;margin:10px 0 0;padding:0}
+.chars li{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line-soft)}
+.chars .pick{flex:1;min-width:0;text-align:left;background:none;border:0;padding:12px 0}
+.chars .pick .n{font-family:var(--display);font-weight:600;font-size:20px;color:var(--pale)}
+.chars .pick .c{font-family:var(--util);font-size:12px;color:var(--muted)}
+.chars li.on .pick .n{color:var(--gold-hi)}
+.chars li.on .pick .n::before{content:"\2726  ";color:var(--gold)}
+
+h3.sec{font-family:var(--display);font-weight:600;font-size:22px;color:var(--gold);margin:22px 0 4px;letter-spacing:.04em}
+.lead{color:var(--muted);margin:0 0 8px}
+textarea.io{width:100%;min-height:7rem;background:var(--void);border:1px solid var(--line);border-radius:3px;padding:8px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:60;background:var(--pale);color:var(--void);font-family:var(--util);font-weight:600;font-size:14px;padding:9px 16px;border-radius:3px;box-shadow:0 6px 24px rgba(0,0,0,.5);max-width:calc(100% - 32px)}
+</style>
+
+<header class="top"><div class="wrap">
+  <div class="brand"><div class="k">Eidolon Vhar</div><h1>Spellbook</h1></div>
+  <button class="who" id="whoBtn" type="button" aria-label="Switch character"><span class="n" id="whoName"></span><span class="c" id="whoCls"></span></button>
+</div></header>
+
+<main>
+  <section class="view wrap" id="v-spells"></section>
+  <section class="view wrap" id="v-book" hidden></section>
+  <section class="view wrap" id="v-slots" hidden></section>
+  <section class="view wrap" id="v-brew" hidden></section>
+</main>
+
+<nav class="tabs" aria-label="Sections"><div class="in" role="tablist">
+  <button type="button" role="tab" data-v="spells" aria-selected="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>All spells</button>
+  <button type="button" role="tab" data-v="book" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5c-.8 0-1.5-.7-1.5-1.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg>Spellbook</button>
+  <button type="button" role="tab" data-v="slots" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 3l5 9-5 9-5-9z"/><path d="M12 3v18"/></svg>Slots</button>
+  <button type="button" role="tab" data-v="brew" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M15 4l5 5L9 20H4v-5z"/><path d="M13 6l5 5"/></svg>Homebrew</button>
+</div></nav>
+
+<div id="sheet" class="sheet" hidden><div class="panel" id="panel" role="dialog" aria-modal="true"></div></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+const SRD = /*SPELLS*/[];
+// Built-in Eidolon Vhar spells, shared with every player through app updates
+const CAMPAIGN = /*CAMPAIGN*/[].map(s=>Object.assign({},s,{ev:true}));
+(function(){
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const CLASSES=['Bard','Cleric','Druid','Paladin','Ranger','Sorcerer','Warlock','Wizard'];
+const SCHOOLS=['Abjuration','Conjuration','Divination','Enchantment','Evocation','Illusion','Necromancy','Transmutation'];
+const ORD=['Cantrip','1st','2nd','3rd','4th','5th','6th','7th','8th','9th'];
+const LVNAME=l=>l===0?'Cantrips':ORD[l]+' level';
+// Standard 2024 slot table for full casters, by caster level 1-20
+const FULL=[[2],[3],[4,2],[4,3],[4,3,2],[4,3,3],[4,3,3,1],[4,3,3,2],[4,3,3,3,1],[4,3,3,3,2],[4,3,3,3,2,1],[4,3,3,3,2,1],[4,3,3,3,2,1,1],[4,3,3,3,2,1,1],[4,3,3,3,2,1,1,1],[4,3,3,3,2,1,1,1],[4,3,3,3,2,1,1,1,1],[4,3,3,3,3,1,1,1,1],[4,3,3,3,3,2,1,1,1],[4,3,3,3,3,2,2,1,1]];
+const FULLC=['Bard','Cleric','Druid','Sorcerer','Wizard'], HALFC=['Paladin','Ranger'];
+function autoSlots(cls,lvl){
+  const a=new Array(9).fill(0);
+  let row=null;
+  if(FULLC.includes(cls)) row=FULL[lvl-1];
+  else if(HALFC.includes(cls)) row=FULL[Math.ceil(lvl/2)-1];
+  if(row) row.forEach((n,i)=>a[i]=n);
+  return a;
+}
+function pact(lvl){ // Warlock Pact Magic: [count, slot level]
+  const n=lvl>=17?4:lvl>=11?3:lvl>=2?2:1;
+  const l=lvl>=9?5:lvl>=7?4:lvl>=5?3:lvl>=3?2:1;
+  return [n,l];
+}
+
+/* ---------- storage ---------- */
+const KEY='ev-spellbook-v1';
+function load(){ try{ const t=localStorage.getItem(KEY); if(t) return JSON.parse(t);}catch(e){} return null; }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+const uid=()=>Math.random().toString(36).slice(2,10);
+function newChar(name,cls,level){ return {id:uid(),name,cls,level,known:{},custom:null,spent:new Array(9).fill(0),pactSpent:0,conc:null}; }
+function seed(){
+  const c=newChar('Example wizard','Wizard',5);
+  ['fire-bolt','mage-hand','prestidigitation','magic-missile','shield','detect-magic','misty-step','fireball','counterspell','mage-armor'].forEach((id,i)=>{ if(SRD.some(s=>s.id===id)) c.known[id]=i<8; });
+  c.spent[0]=1;
+  return {v:1,chars:[c],active:c.id,brew:[{id:'hb-'+uid(),n:'Brill Anchor',l:1,s:'Abjuration',c:['Cleric','Wizard','Warlock'],t:'Reaction, which you take when a creature you can see within 30 feet is targeted by an effect that would erase or change its memories',r:'30 feet',k:'VS',m:'',d:'1 minute',co:false,ri:false,x:'*Example homebrew spell. Edit or delete it in the Homebrew tab.*\n\nA thread of pale Brill-light ties the target to who it was a moment ago. The target has Advantage on the saving throw against the effect, and for the duration it can\'t lose memories to the fading of the Fadelands.\n\n***Using a Higher-Level Spell Slot.*** You can target one additional creature for each spell slot level above 1.',hb:true}],ui:{tab:'spells'}};
+}
+let S=load()||seed();
+S.ui=S.ui||{tab:'spells'};
+const F={q:'',lv:null,cls:'',school:'',conc:false,rit:false,src:''};
+
+/* ---------- helpers ---------- */
+function all(){ return SRD.concat(CAMPAIGN,S.brew); }
+function byId(id){ return SRD.find(s=>s.id===id)||CAMPAIGN.find(s=>s.id===id)||S.brew.find(s=>s.id===id); }
+function srcOf(s){ return s.hb?'hb':s.ev?'ev':'srd'; }
+function me(){ return S.chars.find(c=>c.id===S.active)||S.chars[0]||null; }
+function maxSlots(c){ return c.custom?c.custom.slice():autoSlots(c.cls,c.level); }
+function lvlLine(s){ return s.l===0?s.s+' cantrip':ORD[s.l]+'-level '+s.s.toLowerCase(); }
+function dur(s){ return s.co&&!/^concentration/i.test(s.d)?'Concentration, '+s.d:s.d; }
+function cmp(a,b){ return a.l-b.l||a.n.localeCompare(b.n); }
+let toastT;
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,2200); }
+
+function md(src){
+  const inl=t=>esc(t).replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/(^|\W)_(.+?)_(?=\W|$)/g,'$1<em>$2</em>');
+  const out=[]; const blocks=String(src||'').replace(/\r/g,'').split(/\n\s*\n/);
+  for(const b of blocks){
+    const lines=b.split('\n').map(l=>l.trim()).filter(Boolean);
+    if(!lines.length) continue;
+    if(lines.every(l=>l.startsWith('|'))){
+      const rows=lines.filter(l=>!/^\|\s*-{2,}/.test(l)).map(l=>l.replace(/^\||\|$/g,'').split('|').map(c=>c.trim()));
+      out.push('<div class="tbl"><table><thead><tr>'+rows[0].map(c=>'<th>'+inl(c)+'</th>').join('')+'</tr></thead><tbody>'+rows.slice(1).map(r=>'<tr>'+r.map(c=>'<td>'+inl(c)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>');
+    } else if(lines.every(l=>/^[-*•]\s/.test(l))){
+      out.push('<ul>'+lines.map(l=>'<li>'+inl(l.replace(/^[-*•]\s+/,''))+'</li>').join('')+'</ul>');
+    } else out.push('<p>'+lines.map(inl).join('<br>')+'</p>');
+  }
+  return out.join('');
+}
+
+/* ---------- views ---------- */
+function setTab(v){
+  S.ui.tab=v; save();
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v===v)));
+  ['spells','book','slots','brew'].forEach(k=>$('#v-'+k).hidden=k!==v);
+  render(); window.scrollTo(0,0);
+}
+function render(){
+  const c=me();
+  $('#whoName').textContent=c?c.name:'No character';
+  $('#whoCls').textContent=c?c.cls+' · level '+c.level:'Tap to add';
+  const v=S.ui.tab;
+  if(v==='spells') renderSpells(); else if(v==='book') renderBook(); else if(v==='slots') renderSlots(); else renderBrew();
+}
+
+function spellLi(s,c,showPrep){
+  const known=c&&s.id in c.known;
+  const marks=[s.co?'<span class="mk" title="Concentration">C</span>':'',s.ri?'<span class="mk" title="Ritual">R</span>':'',s.hb?'<span class="mk hb">HB</span>':'',s.ev?'<span class="mk ev" title="Eidolon Vhar">EV</span>':'',(!showPrep&&known)?'<span class="mk inb" title="In your spellbook">'+(c.known[s.id]?'Prep':'Book')+'</span>':''].join('');
+  const prep=showPrep&&s.l>0?`<button class="prep" type="button" data-prep="${esc(s.id)}" aria-pressed="${!!c.known[s.id]}" aria-label="Prepared: ${esc(s.n)}"><i></i></button>`:(showPrep?'<span class="prep" aria-hidden="true"></span>':'');
+  return `<li><button class="srow" type="button" data-open="${esc(s.id)}"><span class="nm">${esc(s.n)}</span><span class="marks">${marks}</span><span class="meta">${esc(s.l===0?'Cantrip':ORD[s.l])} · ${esc(s.s)} · ${esc(s.t.split(',')[0])} · ${esc(s.r)}</span></button>${prep}</li>`;
+}
+function groupList(list,c,showPrep){
+  let h='',cur=-1;
+  for(const s of list){
+    if(s.l!==cur){ if(cur>=0) h+='</ul>'; cur=s.l; const n=list.filter(x=>x.l===cur).length; h+=`<div class="lvhead">${LVNAME(cur)}<small>${n}</small></div><ul class="spells">`; }
+    h+=spellLi(s,c,showPrep);
+  }
+  return h+(cur>=0?'</ul>':'');
+}
+
+function renderSpells(){
+  const el=$('#v-spells');
+  if(!el.dataset.built){
+    el.innerHTML=`<div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="q" type="search" placeholder="Search spells or rules text" autocomplete="off" aria-label="Search spells"></div>
+    <div class="levels" id="lvchips" role="group" aria-label="Spell level"></div>
+    <div class="frow">
+      <select id="fcls" aria-label="Class"><option value="">All classes</option>${CLASSES.map(x=>`<option>${x}</option>`).join('')}</select>
+      <select id="fsch" aria-label="School"><option value="">All schools</option>${SCHOOLS.map(x=>`<option>${x}</option>`).join('')}</select>
+      <select id="fsrc" aria-label="Source"><option value="">All sources</option><option value="srd">SRD only</option><option value="ev">Eidolon Vhar</option><option value="hb">My homebrew</option></select>
+      <button class="chip" type="button" id="fconc" aria-pressed="false">Concentration</button>
+      <button class="chip" type="button" id="frit" aria-pressed="false">Ritual</button>
+    </div>
+    <div class="count"><span id="cnt"></span><button class="linkbtn" type="button" id="freset">Clear filters</button></div>
+    <div id="slist"></div>`;
+    el.dataset.built='1';
+    $('#lvchips').innerHTML=['All'].concat(ORD.map((o,i)=>i===0?'C':String(i))).map((t,i)=>`<button class="chip" type="button" data-lv="${i-1}" aria-pressed="${i===0}">${t}</button>`).join('');
+    $('#q').addEventListener('input',e=>{F.q=e.target.value;listSpells();});
+    $('#lvchips').addEventListener('click',e=>{const b=e.target.closest('[data-lv]');if(!b)return;const v=+b.dataset.lv;F.lv=v<0?null:(F.lv===v?null:v);listSpells();});
+    $('#fcls').addEventListener('change',e=>{F.cls=e.target.value;listSpells();});
+    $('#fsch').addEventListener('change',e=>{F.school=e.target.value;listSpells();});
+    $('#fsrc').addEventListener('change',e=>{F.src=e.target.value;listSpells();});
+    $('#fconc').addEventListener('click',()=>{F.conc=!F.conc;listSpells();});
+    $('#frit').addEventListener('click',()=>{F.rit=!F.rit;listSpells();});
+    $('#freset').addEventListener('click',()=>{Object.assign(F,{q:'',lv:null,cls:'',school:'',conc:false,rit:false,src:''});$('#q').value='';$('#fcls').value='';$('#fsch').value='';$('#fsrc').value='';listSpells();});
+  }
+  listSpells();
+}
+function listSpells(){
+  const q=F.q.trim().toLowerCase();
+  document.querySelectorAll('#lvchips .chip').forEach(b=>{const v=+b.dataset.lv;b.setAttribute('aria-pressed',String(v<0?F.lv===null:F.lv===v));});
+  $('#fconc').setAttribute('aria-pressed',String(F.conc)); $('#frit').setAttribute('aria-pressed',String(F.rit));
+  let list=all().filter(s=>(F.lv===null||s.l===F.lv)&&(!F.cls||s.c.includes(F.cls))&&(!F.school||s.s===F.school)&&(!F.conc||s.co)&&(!F.rit||s.ri)&&(!F.src||srcOf(s)===F.src));
+  if(q){
+    const nameHit=list.filter(s=>s.n.toLowerCase().includes(q));
+    const textHit=list.filter(s=>!s.n.toLowerCase().includes(q)&&s.x.toLowerCase().includes(q));
+    list=nameHit.sort(cmp).concat(textHit.sort(cmp));
+    $('#cnt').textContent=`${nameHit.length} by name · ${textHit.length} in text`;
+    $('#slist').innerHTML=list.length?`<ul class="spells">${list.map(s=>spellLi(s,me(),false)).join('')}</ul>`:'<div class="empty"><b>No spells found</b>Try fewer letters or clear the filters.</div>';
+    return;
+  }
+  list.sort(cmp);
+  $('#cnt').textContent=list.length+(list.length===1?' spell':' spells');
+  $('#slist').innerHTML=list.length?groupList(list,me(),false):'<div class="empty"><b>No spells match</b>Clear a filter to see more.</div>';
+}
+
+function renderBook(){
+  const el=$('#v-book'), c=me();
+  if(!c){ el.innerHTML='<div class="empty"><b>No character yet</b>Tap the box at the top right to add one.</div>'; return; }
+  const ids=Object.keys(c.known).filter(byId);
+  const list=ids.map(byId).sort(cmp);
+  const prepN=list.filter(s=>s.l>0&&c.known[s.id]).length, cantN=list.filter(s=>s.l===0).length;
+  const onlyPrep=!!S.ui.onlyPrep;
+  const shown=onlyPrep?list.filter(s=>s.l===0||c.known[s.id]):list;
+  el.innerHTML=`<div class="count"><span>${cantN} cantrips · ${prepN} prepared · ${list.length-cantN} leveled spells</span><button class="linkbtn" type="button" id="onlyPrep">${onlyPrep?'Show all':'Prepared only'}</button></div>`+
+    (list.length?groupList(shown,c,true)+'<p class="note">Tap the circle to prepare or unprepare a spell. Tap a name to read it or cast it.</p>':'<div class="empty"><b>Your spellbook is empty</b>Open a spell in All spells and tap “Add to spellbook”.</div>');
+  $('#onlyPrep').addEventListener('click',()=>{S.ui.onlyPrep=!onlyPrep;save();renderBook();});
+}
+
+function renderSlots(){
+  const el=$('#v-slots'), c=me();
+  if(!c){ el.innerHTML='<div class="empty"><b>No character yet</b>Tap the box at the top right to add one.</div>'; return; }
+  const mx=maxSlots(c); let h='';
+  if(c.conc){ const s=byId(c.conc); h+=`<div class="conc"><div><div class="t">Concentrating</div><div class="s">${esc(s?s.n:'A spell')}</div></div><button class="btn quiet" type="button" id="endConc">End</button></div>`; }
+  const rows=[];
+  if(c.cls==='Warlock'&&!c.custom){ const [n,l]=pact(c.level); rows.push({pact:true,l,n,sp:Math.min(c.pactSpent||0,n)}); }
+  mx.forEach((n,i)=>{ if(n>0) rows.push({l:i+1,n,sp:Math.min(c.spent[i]||0,n)}); });
+  if(!rows.length) h+='<div class="empty"><b>No spell slots</b>This class and level have no slots. Use “Edit slots” below to set them by hand.</div>';
+  for(const r of rows){
+    let p=''; for(let i=0;i<r.n;i++) p+=`<button type="button" class="pip ${i>=r.n-r.sp?'spent':''}" data-slot="${r.pact?'p':r.l}" data-i="${i}" aria-label="${ORD[r.l]} level slot ${i+1}"><i></i></button>`;
+    h+=`<div class="slotrow"><div class="lv">${r.l}<small>${r.pact?'PACT':'LEVEL'}</small></div><div class="pips">${p}</div><div class="ct">${r.n-r.sp}/${r.n}</div></div>`;
+  }
+  h+=`<div class="rests"><button class="btn quiet" type="button" id="shortRest">Short rest</button><button class="btn solid" type="button" id="longRest">Long rest</button></div>
+  <p class="note">${c.cls==='Warlock'&&!c.custom?'A short rest refills Pact slots. A long rest refills everything.':'A long rest refills all slots and ends concentration.'} Tap a diamond to spend or restore a slot.</p>
+  <h3 class="sec">Slots for ${esc(c.name)}</h3>
+  <p class="lead">${c.custom?'You set these by hand.':'Worked out from '+esc(c.cls)+' level '+c.level+'. For multiclass characters or other classes, set them by hand.'}</p>
+  <div class="actions"><button class="btn quiet" type="button" id="editSlots">${c.custom?'Change slots':'Edit slots'}</button>${c.custom?'<button class="btn quiet" type="button" id="autoSlots">Use class table</button>':''}</div>
+  <div id="slotEditor"></div>`;
+  el.innerHTML=h;
+  el.querySelectorAll('.pip').forEach(b=>b.addEventListener('click',()=>{
+    const k=b.dataset.slot, spentNow=b.classList.contains('spent');
+    if(k==='p'){ c.pactSpent=Math.max(0,(c.pactSpent||0)+(spentNow?-1:1)); }
+    else{ const i=+k-1; c.spent[i]=Math.max(0,(c.spent[i]||0)+(spentNow?-1:1)); }
+    save(); renderSlots();
+  }));
+  $('#endConc')?.addEventListener('click',()=>{c.conc=null;save();renderSlots();});
+  $('#shortRest').addEventListener('click',()=>{c.pactSpent=0;save();renderSlots();toast(c.cls==='Warlock'?'Pact slots restored':'Short rest taken');});
+  $('#longRest').addEventListener('click',()=>{c.spent=new Array(9).fill(0);c.pactSpent=0;c.conc=null;save();renderSlots();toast('All slots restored');});
+  $('#autoSlots')?.addEventListener('click',()=>{c.custom=null;save();renderSlots();});
+  $('#editSlots').addEventListener('click',()=>{
+    const cur=maxSlots(c);
+    $('#slotEditor').innerHTML=`<div class="edits">${cur.map((n,i)=>`<label for="es${i}">${ORD[i+1]}<input id="es${i}" type="number" min="0" max="9" inputmode="numeric" value="${n}"></label>`).join('')}</div><div class="actions"><button class="btn solid" type="button" id="saveSlots">Save slots</button></div>`;
+    $('#saveSlots').addEventListener('click',()=>{c.custom=cur.map((_,i)=>Math.max(0,Math.min(9,parseInt($('#es'+i).value,10)||0)));save();renderSlots();toast('Slots saved');});
+  });
+}
+
+function renderBrew(){
+  const el=$('#v-brew'); const list=S.brew.slice().sort(cmp);
+  el.innerHTML=`<h3 class="sec" style="margin-top:4px">Homebrew spells</h3><p class="lead">Spells you add here show up in All spells with an HB mark, next to the SRD spells.</p>
+  <div class="actions"><button class="btn solid" type="button" id="newBrew">New spell</button></div>
+  ${list.length?groupList(list,me(),false):'<div class="empty"><b>No homebrew yet</b>Tap “New spell” to write your first one.</div>'}
+  <h3 class="sec">Share homebrew</h3>
+  <p class="lead">Copy your homebrew as text to send to your players. They paste it below to add the spells to their app.</p>
+  <div class="actions"><button class="btn quiet" type="button" id="copyBrew">Copy homebrew</button><button class="btn quiet" type="button" id="dlBrew">Save homebrew file</button></div>
+  <h3 class="sec">Back up everything</h3>
+  <p class="lead">Your characters, prepared spells and homebrew live only on this phone. Make a backup now and then.</p>
+  <div class="actions"><button class="btn quiet" type="button" id="copyAll">Copy backup</button><button class="btn quiet" type="button" id="dlAll">Save backup file</button></div>
+  <h3 class="sec">Import</h3>
+  <p class="lead">Paste homebrew or a backup, or pick a file. Homebrew is added to yours. A backup replaces everything on this phone.</p>
+  <textarea class="io" id="ioText" aria-label="Paste homebrew or backup here" placeholder="Paste here"></textarea>
+  <div class="actions"><button class="btn solid" type="button" id="doImport">Import pasted text</button><label class="btn quiet" for="ioFile" style="display:inline-flex;align-items:center">Pick a file</label><input id="ioFile" type="file" accept=".json,application/json,text/plain" hidden></div>
+  <p class="err" id="ioErr" hidden></p>
+  <p class="attr">SRD spells: this app includes material from the System Reference Document 5.2.1 (“SRD 5.2.1”) by Wizards of the Coast LLC, available at <a href="https://www.dndbeyond.com/srd" target="_blank" rel="noopener">dndbeyond.com/srd</a>, licensed under the <a href="https://creativecommons.org/licenses/by/4.0/legalcode" target="_blank" rel="noopener">Creative Commons Attribution 4.0 International License</a>.</p>`;
+  $('#newBrew').addEventListener('click',()=>openForm(null));
+  if(!document.querySelector('link[rel=manifest]')){ $('#dlBrew').hidden=true; $('#dlAll').hidden=true; }
+  const brewText=()=>JSON.stringify({type:'ev-homebrew',v:1,spells:S.brew},null,1);
+  const allText=()=>JSON.stringify(Object.assign({type:'ev-backup'},S),null,1);
+  $('#copyBrew').addEventListener('click',()=>copy(brewText(),'Homebrew copied'));
+  $('#copyAll').addEventListener('click',()=>copy(allText(),'Backup copied'));
+  $('#dlBrew').addEventListener('click',()=>dl(brewText(),'eidolon-vhar-homebrew.json'));
+  $('#dlAll').addEventListener('click',()=>dl(allText(),'eidolon-vhar-spellbook-backup.json'));
+  $('#doImport').addEventListener('click',()=>doImport($('#ioText').value));
+  $('#ioFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>doImport(String(r.result));r.readAsText(f);});
+}
+function copy(text,msg){
+  const ta=$('#ioText');
+  const fallback=()=>{ ta.value=text; ta.focus(); ta.select(); toast('Selected below. Copy it from there.'); };
+  try{ navigator.clipboard.writeText(text).then(()=>toast(msg),fallback); }catch(e){ fallback(); }
+}
+function dl(text,name){
+  try{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'application/json'})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500); toast('Saving '+name); }
+  catch(e){ toast('Saving files is blocked here. Use Copy instead.'); }
+}
+function doImport(text){
+  const err=$('#ioErr'); err.hidden=true;
+  let o; try{ o=JSON.parse(text); }catch(e){ err.textContent='That text is not a homebrew list or backup. Paste the whole thing, from the first { to the last }.'; err.hidden=false; return; }
+  const valid=s=>s&&typeof s.n==='string'&&Number.isInteger(s.l)&&s.l>=0&&s.l<=9;
+  if(o.type==='ev-backup'&&Array.isArray(o.chars)&&Array.isArray(o.brew)){
+    delete o.type; S=o; S.ui=S.ui||{tab:'brew'}; save(); render(); toast('Backup restored'); return;
+  }
+  const arr=Array.isArray(o)?o:(o.spells||[]);
+  const good=arr.filter(valid);
+  if(!good.length){ err.textContent='No spells found in that text.'; err.hidden=false; return; }
+  let added=0,updated=0;
+  for(const s0 of good){
+    const s=normBrew(s0);
+    const i=S.brew.findIndex(b=>b.id===s.id||b.n.toLowerCase()===s.n.toLowerCase());
+    if(i>=0){ s.id=S.brew[i].id; S.brew[i]=s; updated++; } else { S.brew.push(s); added++; }
+  }
+  save(); $('#ioText').value=''; render(); toast(`${added} added, ${updated} updated`);
+}
+function normBrew(s){
+  return {id:String(s.id||'hb-'+uid()).startsWith('hb-')?String(s.id):'hb-'+uid(),n:String(s.n).slice(0,80),l:s.l,s:SCHOOLS.includes(s.s)?s.s:'Evocation',c:(s.c||[]).filter(x=>CLASSES.includes(x)),t:String(s.t||'Action'),r:String(s.r||'Self'),k:String(s.k||''),m:String(s.m||''),d:String(s.d||'Instantaneous'),co:!!s.co,ri:!!s.ri,x:String(s.x||''),hb:true};
+}
+
+/* ---------- sheets ---------- */
+function openSheet(html,bind){ $('#panel').innerHTML=html; $('#sheet').hidden=false; document.body.style.overflow='hidden'; $('#panel').scrollTop=0; bind&&bind($('#panel')); $('#panel .x')?.focus(); }
+function closeSheet(){ $('#sheet').hidden=true; document.body.style.overflow=''; }
+$('#sheet').addEventListener('click',e=>{ if(e.target.id==='sheet'||e.target.closest('.x')) closeSheet(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#sheet').hidden) closeSheet(); });
+
+function openSpell(id){
+  const s=byId(id); if(!s) return; const c=me();
+  const known=c&&s.id in c.known;
+  const comps=[s.k.split('').join(', '),s.m?'('+s.m+')':''].filter(Boolean).join(' ')||'None';
+  let cast='';
+  if(c&&s.l>0){
+    const mx=maxSlots(c); const opts=[];
+    for(let L=s.l;L<=9;L++){ const left=(mx[L-1]||0)-(c.spent[L-1]||0); if(mx[L-1]>0) opts.push(`<button class="btn ${left>0?'':'quiet'}" type="button" data-cast="${L}" ${left>0?'':'disabled'}>${ORD[L]} · ${left} left</button>`); }
+    if(c.cls==='Warlock'&&!c.custom){ const [n,l]=pact(c.level); const left=n-(c.pactSpent||0); if(l>=s.l) opts.unshift(`<button class="btn" type="button" data-cast="p" ${left>0?'':'disabled'}>Pact ${ORD[l]} · ${left} left</button>`); }
+    if(s.ri) opts.push('<button class="btn quiet" type="button" data-cast="r">As a ritual</button>');
+    cast=opts.length?`<h3 class="sec" style="font-size:18px;margin-top:18px">Cast with a slot</h3><div class="castrow">${opts.join('')}</div>`:'<p class="note" style="margin-top:14px">No slots high enough to cast this.</p>';
+  } else if(c&&s.co){ cast='<div class="castrow" style="margin-top:14px"><button class="btn" type="button" data-cast="0">Start concentrating</button></div>'; }
+  openSheet(`<div class="ph"><div><h2>${esc(s.n)}</h2><div class="sub">${esc(lvlLine(s))}${s.ri?' (ritual)':''}${s.hb?' · homebrew':''}${s.ev?' · Eidolon Vhar':''}</div></div><button class="x" type="button" aria-label="Close">×</button></div>
+  <dl class="stats"><div><dt>Casting time</dt><dd>${esc(s.t)}</dd></div><div><dt>Range</dt><dd>${esc(s.r)}</dd></div><div class="wide"><dt>Components</dt><dd>${esc(comps)}</dd></div><div class="wide"><dt>Duration</dt><dd>${esc(dur(s))}</dd></div></dl>
+  <div class="desc">${md(s.x)}</div>
+  <div class="classes">${s.c.length?esc(s.c.join(' · ')):'No class list'}</div>
+  ${c?`<div class="actions"><button class="btn ${known?'blood':'solid'}" type="button" id="tKnown">${known?'Remove from spellbook':'Add to spellbook'}</button>${known&&s.l>0?`<button class="btn" type="button" id="tPrep">${c.known[s.id]?'Unprepare':'Prepare'}</button>`:''}${s.hb?'<button class="btn quiet" type="button" id="tEdit">Edit</button>':''}</div>`:''}
+  ${cast}`, p=>{
+    p.querySelector('#tKnown')?.addEventListener('click',()=>{ if(known) delete c.known[s.id]; else c.known[s.id]=s.l>0; save(); render(); openSpell(id); toast(known?'Removed from '+c.name:'Added to '+c.name+(s.l>0?' and prepared':'')); });
+    p.querySelector('#tPrep')?.addEventListener('click',()=>{ c.known[s.id]=!c.known[s.id]; save(); render(); openSpell(id); });
+    p.querySelector('#tEdit')?.addEventListener('click',()=>openForm(s));
+    p.querySelectorAll('[data-cast]').forEach(b=>b.addEventListener('click',()=>{
+      const k=b.dataset.cast; let msg='Cast '+s.n;
+      if(k==='p'){ c.pactSpent=(c.pactSpent||0)+1; msg+=' with a Pact slot'; }
+      else if(k==='r'){ msg+=' as a ritual'; }
+      else if(k!=='0'){ c.spent[+k-1]=(c.spent[+k-1]||0)+1; msg+=' at '+ORD[+k]+' level'; }
+      if(s.co){ c.conc=s.id; msg+=' · concentrating'; }
+      save(); render(); closeSheet(); toast(k==='0'?'Concentrating on '+s.n:msg);
+    }));
+  });
+}
+
+function openForm(s){
+  const e=s||{n:'',l:1,s:'Evocation',c:[],t:'Action',r:'60 feet',k:'VS',m:'',d:'Instantaneous',co:false,ri:false,x:''};
+  openSheet(`<div class="ph"><div><h2>${s?'Edit spell':'New spell'}</h2><div class="sub">Homebrew for Eidolon Vhar</div></div><button class="x" type="button" aria-label="Close">×</button></div>
+  <form class="f" id="bf" novalidate>
+    <label for="bn">Name<input id="bn" type="text" required maxlength="80" value="${esc(e.n)}" placeholder="Veil Splinter"></label>
+    <div class="two"><label for="bl">Level<select id="bl">${ORD.map((o,i)=>`<option value="${i}" ${i===e.l?'selected':''}>${i===0?'Cantrip':o}</option>`).join('')}</select></label>
+    <label for="bs">School<select id="bs">${SCHOOLS.map(x=>`<option ${x===e.s?'selected':''}>${x}</option>`).join('')}</select></label></div>
+    <fieldset><legend>Classes</legend><div class="checks">${CLASSES.map(x=>`<label for="bc-${x}"><input type="checkbox" id="bc-${x}" value="${x}" ${e.c.includes(x)?'checked':''}>${x}</label>`).join('')}</div></fieldset>
+    <div class="two"><label for="bt">Casting time<input id="bt" type="text" value="${esc(e.t)}"></label><label for="br">Range<input id="br" type="text" value="${esc(e.r)}"></label></div>
+    <fieldset><legend>Components</legend><div class="checks">${['V','S','M'].map(x=>`<label for="bk-${x}"><input type="checkbox" id="bk-${x}" value="${x}" ${e.k.includes(x)?'checked':''}>${{V:'Verbal',S:'Somatic',M:'Material'}[x]}</label>`).join('')}</div></fieldset>
+    <label for="bm">Material (if any)<input id="bm" type="text" value="${esc(e.m)}" placeholder="a sliver of Brill"></label>
+    <label for="bd">Duration<input id="bd" type="text" value="${esc(e.d)}" placeholder="up to 1 minute"></label>
+    <div class="checks"><label for="bco"><input type="checkbox" id="bco" ${e.co?'checked':''}>Concentration</label><label for="bri"><input type="checkbox" id="bri" ${e.ri?'checked':''}>Ritual</label></div>
+    <label for="bx">Description<textarea id="bx" placeholder="What the spell does. Leave an empty line between paragraphs. **bold** and *italic* work.">${esc(e.x)}</textarea></label>
+    <p class="err" id="bErr" hidden></p>
+    <div class="actions"><button class="btn solid" type="submit">Save spell</button>${s?'<button class="btn blood" type="button" id="bDel">Delete spell</button>':''}</div>
+    <div id="delConfirm"></div>
+  </form>`, p=>{
+    p.querySelector('#bf').addEventListener('submit',ev=>{
+      ev.preventDefault();
+      const n=$('#bn').value.trim(); if(!n){ const er=$('#bErr'); er.textContent='Give the spell a name.'; er.hidden=false; $('#bn').focus(); return; }
+      const o={id:s?s.id:'hb-'+uid(),n,l:+$('#bl').value,s:$('#bs').value,c:CLASSES.filter(x=>$('#bc-'+x).checked),t:$('#bt').value.trim()||'Action',r:$('#br').value.trim()||'Self',k:['V','S','M'].filter(x=>$('#bk-'+x).checked).join(''),m:$('#bm').value.trim(),d:$('#bd').value.trim()||'Instantaneous',co:$('#bco').checked,ri:$('#bri').checked,x:$('#bx').value,hb:true};
+      if(s){ S.brew[S.brew.findIndex(b=>b.id===s.id)]=o; } else S.brew.push(o);
+      save(); render(); openSpell(o.id); toast(s?'Spell saved':'Spell added');
+    });
+    p.querySelector('#bDel')?.addEventListener('click',()=>{
+      $('#delConfirm').innerHTML='<p class="err">Delete “'+esc(s.n)+'” for good? It is also removed from every spellbook.</p><div class="actions"><button class="btn blood" type="button" id="bDel2">Yes, delete</button><button class="btn quiet" type="button" id="bKeep">Keep it</button></div>';
+      $('#bKeep').addEventListener('click',()=>$('#delConfirm').innerHTML='');
+      $('#bDel2').addEventListener('click',()=>{ S.brew=S.brew.filter(b=>b.id!==s.id); S.chars.forEach(c=>{delete c.known[s.id]; if(c.conc===s.id)c.conc=null;}); save(); closeSheet(); render(); toast('Spell deleted'); });
+    });
+  });
+}
+
+function openChars(editId){
+  const ed=editId?S.chars.find(c=>c.id===editId):null;
+  const lst=S.chars.map(c=>`<li class="${c.id===S.active?'on':''}"><button class="pick" type="button" data-pick="${c.id}"><div class="n">${esc(c.name)}</div><div class="c">${esc(c.cls)} · level ${c.level} · ${Object.keys(c.known).length} spells</div></button><button class="btn quiet" type="button" data-edit="${c.id}">Edit</button></li>`).join('');
+  openSheet(`<div class="ph"><div><h2>Characters</h2><div class="sub">Each character has their own spellbook and slots.</div></div><button class="x" type="button" aria-label="Close">×</button></div>
+  ${S.chars.length?`<ul class="chars">${lst}</ul>`:''}
+  <h3 class="sec">${ed?'Edit '+esc(ed.name):'New character'}</h3>
+  <form class="f" id="cf" novalidate>
+    <label for="cn">Name<input id="cn" type="text" maxlength="40" value="${esc(ed?ed.name:'')}" placeholder="Ysolde of Fylson"></label>
+    <div class="two"><label for="cc">Class<select id="cc">${CLASSES.concat(['Other']).map(x=>`<option ${ed&&ed.cls===x?'selected':''}>${x}</option>`).join('')}</select></label>
+    <label for="cl">Level<input id="cl" type="number" min="1" max="20" inputmode="numeric" value="${ed?ed.level:1}"></label></div>
+    <p class="err" id="cErr" hidden></p>
+    <div class="actions"><button class="btn solid" type="submit">${ed?'Save changes':'Add character'}</button>${ed?'<button class="btn quiet" type="button" id="cNew">New character instead</button><button class="btn blood" type="button" id="cDel">Delete</button>':''}</div>
+    <div id="cConfirm"></div>
+  </form>`, p=>{
+    p.querySelectorAll('[data-pick]').forEach(b=>b.addEventListener('click',()=>{S.active=b.dataset.pick;save();render();closeSheet();toast('Now using '+me().name);}));
+    p.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>openChars(b.dataset.edit)));
+    p.querySelector('#cNew')?.addEventListener('click',()=>openChars(null));
+    p.querySelector('#cf').addEventListener('submit',ev=>{
+      ev.preventDefault();
+      const n=$('#cn').value.trim(), cls=$('#cc').value, lv=Math.max(1,Math.min(20,parseInt($('#cl').value,10)||1));
+      if(!n){ const er=$('#cErr'); er.textContent='Give the character a name.'; er.hidden=false; $('#cn').focus(); return; }
+      if(ed){ ed.name=n; ed.cls=cls; ed.level=lv; } else { const c=newChar(n,cls,lv); S.chars.push(c); S.active=c.id; }
+      save(); render(); closeSheet(); toast(ed?'Character saved':'Added '+n);
+    });
+    p.querySelector('#cDel')?.addEventListener('click',()=>{
+      $('#cConfirm').innerHTML='<p class="err">Delete '+esc(ed.name)+' and their spellbook?</p><div class="actions"><button class="btn blood" type="button" id="cDel2">Yes, delete</button><button class="btn quiet" type="button" id="cKeep">Keep</button></div>';
+      $('#cKeep').addEventListener('click',()=>$('#cConfirm').innerHTML='');
+      $('#cDel2').addEventListener('click',()=>{ S.chars=S.chars.filter(c=>c.id!==ed.id); if(S.active===ed.id) S.active=S.chars[0]?.id||null; save(); render(); openChars(null); });
+    });
+  });
+}
+
+/* ---------- global events ---------- */
+document.addEventListener('click',e=>{
+  const o=e.target.closest('[data-open]'); if(o&&!o.closest('#panel')){ openSpell(o.dataset.open); return; }
+  const p=e.target.closest('[data-prep]'); if(p){ const c=me(); c.known[p.dataset.prep]=!c.known[p.dataset.prep]; save(); render(); }
+});
+document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.v)));
+$('#whoBtn').addEventListener('click',()=>openChars(null));
+setTab(['spells','book','slots','brew'].includes(S.ui.tab)?S.ui.tab:'spells');
+})();
+</script>
