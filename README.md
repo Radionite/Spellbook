@@ -1,6 +1,6 @@
 # Eidolon Vhar Spellbook
 
-A D&D 2024 spellbook for phones, made for the Eidolon Vhar campaign. Install it from your browser ("Add to Home screen") and it works offline.
+A spellbook for phones for the 2024 fifth edition rules, made for the Eidolon Vhar campaign. This is an unofficial fan project, not made or endorsed by Wizards of the Coast. Install it from your browser ("Add to Home screen") and it works offline.
 
 - All 339 spells from the free SRD 5.2.1, with search and filters
 - Several characters, each with their own spellbook and prepared spells
