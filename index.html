@@ -272,11 +272,14 @@ function seed(){
   const c=Object.assign(newChar('Example wizard','Wizard',5),{score:17,bonus:0});
   ['fire-bolt','mage-hand','prestidigitation','magic-missile','shield','detect-magic','misty-step','fireball','counterspell','mage-armor'].forEach((id,i)=>{ if(SRD.some(s=>s.id===id)) c.known[id]=i<8; });
   c.spent[0]=1; c.always={'detect-magic':true}; c.known['detect-magic']=false;
-  return {v:1,chars:[c],active:c.id,brew:[{id:'hb-'+uid(),n:'Brill Anchor',l:1,s:'Abjuration',c:['Cleric','Wizard','Warlock'],t:'Reaction, which you take when a creature you can see within 30 feet is targeted by an effect that would erase or change its memories',r:'30 feet',k:'VS',m:'',d:'1 minute',co:false,ri:false,x:'*Example homebrew spell. Edit or delete it in the Homebrew tab.*\n\nA thread of pale Brill-light ties the target to who it was a moment ago. The target has Advantage on the saving throw against the effect, and for the duration it can\'t lose memories to the fading of the Fadelands.\n\n***Using a Higher-Level Spell Slot.*** You can target one additional creature for each spell slot level above 1.',hb:true}],ui:{tab:'spells'}};
+  return {v:1,chars:[c],active:c.id,brew:[],ui:{tab:'spells'}};
 }
 let S=load()||seed();
 S.ui=S.ui||{tab:'spells'};
 S.classes=S.classes||[];
+// Remove the old built-in example homebrew spell from earlier installs
+S.brew=S.brew.filter(b=>!(b.n==='Brill Anchor'&&/^\*Example homebrew spell/.test(b.x)));
+S.chars.forEach(c=>Object.keys(c.known).forEach(id=>{ if(!byId(id)){ delete c.known[id]; if(c.always) delete c.always[id]; } }));
 const F={q:'',lv:null,cls:'',school:'',conc:false,rit:false,src:''};
 
 /* ---------- helpers ---------- */
