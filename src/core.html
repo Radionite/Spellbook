@@ -117,6 +117,10 @@ ul.spells li{display:flex;align-items:center;gap:8px;border-bottom:1px solid var
 .conc{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--veil);background:rgba(127,160,138,.08);padding:10px 12px;border-radius:3px;margin-bottom:14px}
 .conc .t{font-family:var(--util);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--veil)}
 .conc .s{font-family:var(--display);font-size:20px;font-weight:600;color:var(--pale)}
+.castnums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.castnums div{border:1px solid var(--line);border-radius:3px;padding:8px 10px;text-align:center;min-width:0}
+.castnums span{display:block;font-family:var(--util);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.castnums b{font-family:var(--display);font-size:28px;color:var(--gold-hi);font-variant-numeric:tabular-nums;line-height:1.1}
 .slotrow{display:grid;grid-template-columns:3.2rem 1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line-soft)}
 .slotrow .lv{font-family:var(--display);font-weight:700;font-size:22px;color:var(--gold)}
 .slotrow .lv small{display:block;font-family:var(--util);font-size:10px;letter-spacing:.14em;color:var(--muted);font-weight:500}
@@ -194,11 +198,18 @@ const LVNAME=l=>l===0?'Cantrips':ORD[l]+' level';
 // Standard 2024 slot table for full casters, by caster level 1-20
 const FULL=[[2],[3],[4,2],[4,3],[4,3,2],[4,3,3],[4,3,3,1],[4,3,3,2],[4,3,3,3,1],[4,3,3,3,2],[4,3,3,3,2,1],[4,3,3,3,2,1],[4,3,3,3,2,1,1],[4,3,3,3,2,1,1],[4,3,3,3,2,1,1,1],[4,3,3,3,2,1,1,1],[4,3,3,3,2,1,1,1,1],[4,3,3,3,3,1,1,1,1],[4,3,3,3,3,2,1,1,1],[4,3,3,3,3,2,2,1,1]];
 const FULLC=['Bard','Cleric','Druid','Sorcerer','Wizard'], HALFC=['Paladin','Ranger'];
+const CASTERS={full:'Full caster (like Wizard)',half:'Half caster (like Paladin)',third:'Third caster (like Eldritch Knight)',pact:'Pact Magic (like Warlock)',none:'No spell slots'};
+function cclass(name){ return (S.classes||[]).find(k=>k.name===name)||null; }
+function casterOf(cls){ const k=cclass(cls); if(k) return k.caster; return FULLC.includes(cls)?'full':HALFC.includes(cls)?'half':cls==='Warlock'?'pact':'none'; }
+function isPact(c){ return casterOf(c.cls)==='pact'&&!c.custom; }
+function allClasses(){ return CLASSES.concat((S.classes||[]).map(k=>k.name)); }
+function inClass(s,cls){ if(s.c.includes(cls)) return true; const k=cclass(cls); return !!(k&&k.spells.includes(s.id)); }
 function autoSlots(cls,lvl){
   const a=new Array(9).fill(0);
-  let row=null;
-  if(FULLC.includes(cls)) row=FULL[lvl-1];
-  else if(HALFC.includes(cls)) row=FULL[Math.ceil(lvl/2)-1];
+  let row=null; const t=casterOf(cls);
+  if(t==='full') row=FULL[lvl-1];
+  else if(t==='half') row=FULL[Math.ceil(lvl/2)-1];
+  else if(t==='third'&&lvl>=3) row=FULL[Math.ceil(lvl/3)-1];
   if(row) row.forEach((n,i)=>a[i]=n);
   return a;
 }
@@ -213,15 +224,23 @@ const KEY='ev-spellbook-v1';
 function load(){ try{ const t=localStorage.getItem(KEY); if(t) return JSON.parse(t);}catch(e){} return null; }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 const uid=()=>Math.random().toString(36).slice(2,10);
+const ABIL={int:'Intelligence',wis:'Wisdom',cha:'Charisma'};
+function defAbil(cls){ const k=cclass(cls); if(k&&k.abil) return k.abil; return {Wizard:'int',Cleric:'wis',Druid:'wis',Ranger:'wis'}[cls]||'cha'; }
+const prof=l=>2+Math.floor((l-1)/4);
+const sgn=n=>(n>=0?'+':'')+n;
+function castStats(c){ const a=c.abil||defAbil(c.cls), sc=c.score||10, mod=Math.floor((sc-10)/2), b=c.bonus||0, p=prof(c.level);
+  return {a,sc,mod,b,p,dc:8+p+mod+b,atk:p+mod+b}; }
+function statStrip(c){ const t=castStats(c); return `<div class="castnums"><div><span>Spell save DC</span><b>${t.dc}</b></div><div><span>Spell attack</span><b>${sgn(t.atk)}</b></div><div><span>${ABIL[t.a].slice(0,3).toUpperCase()} modifier</span><b>${sgn(t.mod)}</b></div></div>`; }
 function newChar(name,cls,level){ return {id:uid(),name,cls,level,known:{},custom:null,spent:new Array(9).fill(0),pactSpent:0,conc:null}; }
 function seed(){
-  const c=newChar('Example wizard','Wizard',5);
+  const c=Object.assign(newChar('Example wizard','Wizard',5),{score:17,bonus:0});
   ['fire-bolt','mage-hand','prestidigitation','magic-missile','shield','detect-magic','misty-step','fireball','counterspell','mage-armor'].forEach((id,i)=>{ if(SRD.some(s=>s.id===id)) c.known[id]=i<8; });
   c.spent[0]=1;
   return {v:1,chars:[c],active:c.id,brew:[{id:'hb-'+uid(),n:'Brill Anchor',l:1,s:'Abjuration',c:['Cleric','Wizard','Warlock'],t:'Reaction, which you take when a creature you can see within 30 feet is targeted by an effect that would erase or change its memories',r:'30 feet',k:'VS',m:'',d:'1 minute',co:false,ri:false,x:'*Example homebrew spell. Edit or delete it in the Homebrew tab.*\n\nA thread of pale Brill-light ties the target to who it was a moment ago. The target has Advantage on the saving throw against the effect, and for the duration it can\'t lose memories to the fading of the Fadelands.\n\n***Using a Higher-Level Spell Slot.*** You can target one additional creature for each spell slot level above 1.',hb:true}],ui:{tab:'spells'}};
 }
 let S=load()||seed();
 S.ui=S.ui||{tab:'spells'};
+S.classes=S.classes||[];
 const F={q:'',lv:null,cls:'',school:'',conc:false,rit:false,src:''};
 
 /* ---------- helpers ---------- */
@@ -288,7 +307,7 @@ function renderSpells(){
     el.innerHTML=`<div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="q" type="search" placeholder="Search spells or rules text" autocomplete="off" aria-label="Search spells"></div>
     <div class="levels" id="lvchips" role="group" aria-label="Spell level"></div>
     <div class="frow">
-      <select id="fcls" aria-label="Class"><option value="">All classes</option>${CLASSES.map(x=>`<option>${x}</option>`).join('')}</select>
+      <select id="fcls" aria-label="Class"></select>
       <select id="fsch" aria-label="School"><option value="">All schools</option>${SCHOOLS.map(x=>`<option>${x}</option>`).join('')}</select>
       <select id="fsrc" aria-label="Source"><option value="">All sources</option><option value="srd">SRD only</option><option value="ev">Eidolon Vhar</option><option value="hb">My homebrew</option></select>
       <button class="chip" type="button" id="fconc" aria-pressed="false">Concentration</button>
@@ -307,13 +326,16 @@ function renderSpells(){
     $('#frit').addEventListener('click',()=>{F.rit=!F.rit;listSpells();});
     $('#freset').addEventListener('click',()=>{Object.assign(F,{q:'',lv:null,cls:'',school:'',conc:false,rit:false,src:''});$('#q').value='';$('#fcls').value='';$('#fsch').value='';$('#fsrc').value='';listSpells();});
   }
+  const fc=$('#fcls'); if(!allClasses().includes(F.cls)) F.cls='';
+  fc.innerHTML='<option value="">All classes</option>'+allClasses().map(x=>`<option ${x===F.cls?'selected':''}>${esc(x)}</option>`).join('');
+  $('#fsch').value=F.school; $('#fsrc').value=F.src; $('#q').value=F.q;
   listSpells();
 }
 function listSpells(){
   const q=F.q.trim().toLowerCase();
   document.querySelectorAll('#lvchips .chip').forEach(b=>{const v=+b.dataset.lv;b.setAttribute('aria-pressed',String(v<0?F.lv===null:F.lv===v));});
   $('#fconc').setAttribute('aria-pressed',String(F.conc)); $('#frit').setAttribute('aria-pressed',String(F.rit));
-  let list=all().filter(s=>(F.lv===null||s.l===F.lv)&&(!F.cls||s.c.includes(F.cls))&&(!F.school||s.s===F.school)&&(!F.conc||s.co)&&(!F.rit||s.ri)&&(!F.src||srcOf(s)===F.src));
+  let list=all().filter(s=>(F.lv===null||s.l===F.lv)&&(!F.cls||inClass(s,F.cls))&&(!F.school||s.s===F.school)&&(!F.conc||s.co)&&(!F.rit||s.ri)&&(!F.src||srcOf(s)===F.src));
   if(q){
     const nameHit=list.filter(s=>s.n.toLowerCase().includes(q));
     const textHit=list.filter(s=>!s.n.toLowerCase().includes(q)&&s.x.toLowerCase().includes(q));
@@ -343,10 +365,10 @@ function renderBook(){
 function renderSlots(){
   const el=$('#v-slots'), c=me();
   if(!c){ el.innerHTML='<div class="empty"><b>No character yet</b>Tap the box at the top right to add one.</div>'; return; }
-  const mx=maxSlots(c); let h='';
+  const mx=maxSlots(c); let h=statStrip(c);
   if(c.conc){ const s=byId(c.conc); h+=`<div class="conc"><div><div class="t">Concentrating</div><div class="s">${esc(s?s.n:'A spell')}</div></div><button class="btn quiet" type="button" id="endConc">End</button></div>`; }
   const rows=[];
-  if(c.cls==='Warlock'&&!c.custom){ const [n,l]=pact(c.level); rows.push({pact:true,l,n,sp:Math.min(c.pactSpent||0,n)}); }
+  if(isPact(c)){ const [n,l]=pact(c.level); rows.push({pact:true,l,n,sp:Math.min(c.pactSpent||0,n)}); }
   mx.forEach((n,i)=>{ if(n>0) rows.push({l:i+1,n,sp:Math.min(c.spent[i]||0,n)}); });
   if(!rows.length) h+='<div class="empty"><b>No spell slots</b>This class and level have no slots. Use “Edit slots” below to set them by hand.</div>';
   for(const r of rows){
@@ -354,8 +376,9 @@ function renderSlots(){
     h+=`<div class="slotrow"><div class="lv">${r.l}<small>${r.pact?'PACT':'LEVEL'}</small></div><div class="pips">${p}</div><div class="ct">${r.n-r.sp}/${r.n}</div></div>`;
   }
   h+=`<div class="rests"><button class="btn quiet" type="button" id="shortRest">Short rest</button><button class="btn solid" type="button" id="longRest">Long rest</button></div>
-  <p class="note">${c.cls==='Warlock'&&!c.custom?'A short rest refills Pact slots. A long rest refills everything.':'A long rest refills all slots and ends concentration.'} Tap a diamond to spend or restore a slot.</p>
+  <p class="note">${isPact(c)?'A short rest refills Pact slots. A long rest refills everything.':'A long rest refills all slots and ends concentration.'} Tap a diamond to spend or restore a slot.</p>
   <h3 class="sec">Slots for ${esc(c.name)}</h3>
+  <p class="lead">Spell save DC and attack use ${esc(ABIL[castStats(c).a])} ${castStats(c).sc}, proficiency ${sgn(prof(c.level))}${c.bonus?' and an extra '+sgn(c.bonus):''}. Change them under Edit on the character.</p>
   <p class="lead">${c.custom?'You set these by hand.':'Worked out from '+esc(c.cls)+' level '+c.level+'. For multiclass characters or other classes, set them by hand.'}</p>
   <div class="actions"><button class="btn quiet" type="button" id="editSlots">${c.custom?'Change slots':'Edit slots'}</button>${c.custom?'<button class="btn quiet" type="button" id="autoSlots">Use class table</button>':''}</div>
   <div id="slotEditor"></div>`;
@@ -367,7 +390,7 @@ function renderSlots(){
     save(); renderSlots();
   }));
   $('#endConc')?.addEventListener('click',()=>{c.conc=null;save();renderSlots();});
-  $('#shortRest').addEventListener('click',()=>{c.pactSpent=0;save();renderSlots();toast(c.cls==='Warlock'?'Pact slots restored':'Short rest taken');});
+  $('#shortRest').addEventListener('click',()=>{c.pactSpent=0;save();renderSlots();toast(isPact(c)?'Pact slots restored':'Short rest taken');});
   $('#longRest').addEventListener('click',()=>{c.spent=new Array(9).fill(0);c.pactSpent=0;c.conc=null;save();renderSlots();toast('All slots restored');});
   $('#autoSlots')?.addEventListener('click',()=>{c.custom=null;save();renderSlots();});
   $('#editSlots').addEventListener('click',()=>{
@@ -382,8 +405,12 @@ function renderBrew(){
   el.innerHTML=`<h3 class="sec" style="margin-top:4px">Homebrew spells</h3><p class="lead">Spells you add here show up in All spells with an HB mark, next to the SRD spells.</p>
   <div class="actions"><button class="btn solid" type="button" id="newBrew">New spell</button></div>
   ${list.length?groupList(list,me(),false):'<div class="empty"><b>No homebrew yet</b>Tap “New spell” to write your first one.</div>'}
+  <h3 class="sec">Custom classes</h3>
+  <p class="lead">For classes that aren't in the list, like a homebrew or third-party class. Pick how it gets spell slots, then build its spell list. Open any spell and tap the class name under it to add or remove it.</p>
+  ${S.classes.length?`<ul class="chars">${S.classes.map(k=>`<li><button class="pick" type="button" data-kedit="${esc(k.id)}"><div class="n">${esc(k.name)}</div><div class="c">${esc(CASTERS[k.caster])} · ${k.spells.length} spells</div></button><button class="btn quiet" type="button" data-kshow="${esc(k.name)}">Spells</button></li>`).join('')}</ul>`:''}
+  <div class="actions"><button class="btn quiet" type="button" id="newClass">New class</button></div>
   <h3 class="sec">Share homebrew</h3>
-  <p class="lead">Copy your homebrew as text to send to your players. They paste it below to add the spells to their app.</p>
+  <p class="lead">Copy your homebrew spells and custom classes as text to send to your players. They paste it below to add the spells to their app.</p>
   <div class="actions"><button class="btn quiet" type="button" id="copyBrew">Copy homebrew</button><button class="btn quiet" type="button" id="dlBrew">Save homebrew file</button></div>
   <h3 class="sec">Back up everything</h3>
   <p class="lead">Your characters, prepared spells and homebrew live only on this phone. Make a backup now and then.</p>
@@ -395,8 +422,11 @@ function renderBrew(){
   <p class="err" id="ioErr" hidden></p>
   <p class="attr">SRD spells: this app includes material from the System Reference Document 5.2.1 (“SRD 5.2.1”) by Wizards of the Coast LLC, available at <a href="https://www.dndbeyond.com/srd" target="_blank" rel="noopener">dndbeyond.com/srd</a>, licensed under the <a href="https://creativecommons.org/licenses/by/4.0/legalcode" target="_blank" rel="noopener">Creative Commons Attribution 4.0 International License</a>.</p>`;
   $('#newBrew').addEventListener('click',()=>openForm(null));
+  $('#newClass').addEventListener('click',()=>openClassForm(null));
+  el.querySelectorAll('[data-kedit]').forEach(b=>b.addEventListener('click',()=>openClassForm(S.classes.find(k=>k.id===b.dataset.kedit))));
+  el.querySelectorAll('[data-kshow]').forEach(b=>b.addEventListener('click',()=>{ Object.assign(F,{q:'',lv:null,cls:b.dataset.kshow,school:'',conc:false,rit:false,src:''}); const q=$('#q'); if(q) q.value=''; setTab('spells'); }));
   if(!document.querySelector('link[rel=manifest]')){ $('#dlBrew').hidden=true; $('#dlAll').hidden=true; }
-  const brewText=()=>JSON.stringify({type:'ev-homebrew',v:1,spells:S.brew},null,1);
+  const brewText=()=>JSON.stringify({type:'ev-homebrew',v:1,spells:S.brew,classes:S.classes},null,1);
   const allText=()=>JSON.stringify(Object.assign({type:'ev-backup'},S),null,1);
   $('#copyBrew').addEventListener('click',()=>copy(brewText(),'Homebrew copied'));
   $('#copyAll').addEventListener('click',()=>copy(allText(),'Backup copied'));
@@ -419,10 +449,19 @@ function doImport(text){
   let o; try{ o=JSON.parse(text); }catch(e){ err.textContent='That text is not a homebrew list or backup. Paste the whole thing, from the first { to the last }.'; err.hidden=false; return; }
   const valid=s=>s&&typeof s.n==='string'&&Number.isInteger(s.l)&&s.l>=0&&s.l<=9;
   if(o.type==='ev-backup'&&Array.isArray(o.chars)&&Array.isArray(o.brew)){
-    delete o.type; S=o; S.ui=S.ui||{tab:'brew'}; save(); render(); toast('Backup restored'); return;
+    delete o.type; S=o; S.ui=S.ui||{tab:'brew'}; S.classes=S.classes||[]; save(); render(); toast('Backup restored'); return;
   }
   const arr=Array.isArray(o)?o:(o.spells||[]);
   const good=arr.filter(valid);
+  let kAdded=0;
+  for(const k0 of (Array.isArray(o.classes)?o.classes:[])){
+    if(!k0||typeof k0.name!=='string'||!k0.name.trim()||CLASSES.includes(k0.name)) continue;
+    const k={id:'kc-'+uid(),name:k0.name.trim().slice(0,40),caster:CASTERS[k0.caster]?k0.caster:'none',abil:ABIL[k0.abil]?k0.abil:'int',spells:(k0.spells||[]).filter(x=>typeof x==='string')};
+    const ex=S.classes.find(x=>x.name.toLowerCase()===k.name.toLowerCase());
+    if(ex){ ex.caster=k.caster; ex.abil=k.abil; ex.spells=Array.from(new Set(ex.spells.concat(k.spells))); } else S.classes.push(k);
+    kAdded++;
+  }
+  if(!good.length&&kAdded){ save(); $('#ioText').value=''; render(); toast(kAdded+' classes imported'); return; }
   if(!good.length){ err.textContent='No spells found in that text.'; err.hidden=false; return; }
   let added=0,updated=0;
   for(const s0 of good){
@@ -430,7 +469,7 @@ function doImport(text){
     const i=S.brew.findIndex(b=>b.id===s.id||b.n.toLowerCase()===s.n.toLowerCase());
     if(i>=0){ s.id=S.brew[i].id; S.brew[i]=s; updated++; } else { S.brew.push(s); added++; }
   }
-  save(); $('#ioText').value=''; render(); toast(`${added} added, ${updated} updated`);
+  save(); $('#ioText').value=''; render(); toast(`${added} added, ${updated} updated`+(kAdded?`, ${kAdded} classes`:''));
 }
 function normBrew(s){
   return {id:String(s.id||'hb-'+uid()).startsWith('hb-')?String(s.id):'hb-'+uid(),n:String(s.n).slice(0,80),l:s.l,s:SCHOOLS.includes(s.s)?s.s:'Evocation',c:(s.c||[]).filter(x=>CLASSES.includes(x)),t:String(s.t||'Action'),r:String(s.r||'Self'),k:String(s.k||''),m:String(s.m||''),d:String(s.d||'Instantaneous'),co:!!s.co,ri:!!s.ri,x:String(s.x||''),hb:true};
@@ -450,19 +489,22 @@ function openSpell(id){
   if(c&&s.l>0){
     const mx=maxSlots(c); const opts=[];
     for(let L=s.l;L<=9;L++){ const left=(mx[L-1]||0)-(c.spent[L-1]||0); if(mx[L-1]>0) opts.push(`<button class="btn ${left>0?'':'quiet'}" type="button" data-cast="${L}" ${left>0?'':'disabled'}>${ORD[L]} · ${left} left</button>`); }
-    if(c.cls==='Warlock'&&!c.custom){ const [n,l]=pact(c.level); const left=n-(c.pactSpent||0); if(l>=s.l) opts.unshift(`<button class="btn" type="button" data-cast="p" ${left>0?'':'disabled'}>Pact ${ORD[l]} · ${left} left</button>`); }
+    if(isPact(c)){ const [n,l]=pact(c.level); const left=n-(c.pactSpent||0); if(l>=s.l) opts.unshift(`<button class="btn" type="button" data-cast="p" ${left>0?'':'disabled'}>Pact ${ORD[l]} · ${left} left</button>`); }
     if(s.ri) opts.push('<button class="btn quiet" type="button" data-cast="r">As a ritual</button>');
     cast=opts.length?`<h3 class="sec" style="font-size:18px;margin-top:18px">Cast with a slot</h3><div class="castrow">${opts.join('')}</div>`:'<p class="note" style="margin-top:14px">No slots high enough to cast this.</p>';
   } else if(c&&s.co){ cast='<div class="castrow" style="margin-top:14px"><button class="btn" type="button" data-cast="0">Start concentrating</button></div>'; }
   openSheet(`<div class="ph"><div><h2>${esc(s.n)}</h2><div class="sub">${esc(lvlLine(s))}${s.ri?' (ritual)':''}${s.hb?' · homebrew':''}${s.ev?' · Eidolon Vhar':''}</div></div><button class="x" type="button" aria-label="Close">×</button></div>
   <dl class="stats"><div><dt>Casting time</dt><dd>${esc(s.t)}</dd></div><div><dt>Range</dt><dd>${esc(s.r)}</dd></div><div class="wide"><dt>Components</dt><dd>${esc(comps)}</dd></div><div class="wide"><dt>Duration</dt><dd>${esc(dur(s))}</dd></div></dl>
+  ${c&&/saving throw|spell attack/i.test(s.x)?(()=>{const t=castStats(c);return `<p class="note" style="font-style:normal;color:var(--gold-hi);margin:0 0 10px">${esc(c.name)}: save DC ${t.dc} · spell attack ${sgn(t.atk)}</p>`;})():''}
   <div class="desc">${md(s.x)}</div>
-  <div class="classes">${s.c.length?esc(s.c.join(' · ')):'No class list'}</div>
+  <div class="classes">${(()=>{const l=allClasses().filter(x=>inClass(s,x));return l.length?esc(l.join(' · ')):'No class list';})()}</div>
+  ${S.classes.length?`<div class="castrow" style="margin-top:10px" aria-label="Custom class lists">${S.classes.map(k=>`<button class="chip" type="button" data-kc="${esc(k.id)}" aria-pressed="${k.spells.includes(s.id)}">${k.spells.includes(s.id)?'✓ ':'+ '}${esc(k.name)}</button>`).join('')}</div>`:''}
   ${c?`<div class="actions"><button class="btn ${known?'blood':'solid'}" type="button" id="tKnown">${known?'Remove from spellbook':'Add to spellbook'}</button>${known&&s.l>0?`<button class="btn" type="button" id="tPrep">${c.known[s.id]?'Unprepare':'Prepare'}</button>`:''}${s.hb?'<button class="btn quiet" type="button" id="tEdit">Edit</button>':''}</div>`:''}
   ${cast}`, p=>{
     p.querySelector('#tKnown')?.addEventListener('click',()=>{ if(known) delete c.known[s.id]; else c.known[s.id]=s.l>0; save(); render(); openSpell(id); toast(known?'Removed from '+c.name:'Added to '+c.name+(s.l>0?' and prepared':'')); });
     p.querySelector('#tPrep')?.addEventListener('click',()=>{ c.known[s.id]=!c.known[s.id]; save(); render(); openSpell(id); });
     p.querySelector('#tEdit')?.addEventListener('click',()=>openForm(s));
+    p.querySelectorAll('[data-kc]').forEach(b=>b.addEventListener('click',()=>{ const k=S.classes.find(x=>x.id===b.dataset.kc); const i=k.spells.indexOf(s.id); if(i>=0) k.spells.splice(i,1); else k.spells.push(s.id); save(); render(); openSpell(id); toast((i>=0?'Removed from ':'Added to ')+k.name+' list'); }));
     p.querySelectorAll('[data-cast]').forEach(b=>b.addEventListener('click',()=>{
       const k=b.dataset.cast; let msg='Cast '+s.n;
       if(k==='p'){ c.pactSpent=(c.pactSpent||0)+1; msg+=' with a Pact slot'; }
@@ -507,6 +549,37 @@ function openForm(s){
   });
 }
 
+function openClassForm(k){
+  const e=k||{name:'',caster:'full',spells:[]};
+  const base=CLASSES.map(x=>`<option value="${x}">${x}</option>`).join('');
+  openSheet(`<div class="ph"><div><h2>${k?'Edit class':'New class'}</h2><div class="sub">${k?k.spells.length+' spells on its list':'A class with its own spell list'}</div></div><button class="x" type="button" aria-label="Close">×</button></div>
+  <form class="f" id="kf" novalidate>
+    <label for="kn">Class name<input id="kn" type="text" maxlength="40" value="${esc(e.name)}" placeholder="Veilwarden"></label>
+    <label for="ka">Spellcasting ability<select id="ka">${Object.entries(ABIL).map(([v,t])=>`<option value="${v}" ${v===(e.abil||'int')?'selected':''}>${t}</option>`).join('')}</select></label>
+    <label for="kt">Spell slots<select id="kt">${Object.entries(CASTERS).map(([v,t])=>`<option value="${v}" ${v===e.caster?'selected':''}>${t}</option>`).join('')}</select></label>
+    ${k?'':`<label for="kb">Start the spell list from<select id="kb"><option value="">An empty list</option>${base}</select></label>`}
+    <p class="err" id="kErr" hidden></p>
+    <div class="actions"><button class="btn solid" type="submit">${k?'Save class':'Add class'}</button>${k?'<button class="btn blood" type="button" id="kDel">Delete class</button>':''}</div>
+    <div id="kConfirm"></div>
+  </form>`, p=>{
+    p.querySelector('#kf').addEventListener('submit',ev=>{
+      ev.preventDefault();
+      const n=$('#kn').value.trim(), er=$('#kErr');
+      const clash=allClasses().some(x=>x.toLowerCase()===n.toLowerCase()&&(!k||x!==k.name));
+      if(!n||clash){ er.textContent=n?'There is already a class called '+n+'. Pick another name.':'Give the class a name.'; er.hidden=false; $('#kn').focus(); return; }
+      if(k){ S.chars.forEach(c=>{ if(c.cls===k.name) c.cls=n; }); k.name=n; k.caster=$('#kt').value; k.abil=$('#ka').value; }
+      else { const b=$('#kb').value; S.classes.push({id:'kc-'+uid(),name:n,caster:$('#kt').value,abil:$('#ka').value,spells:b?all().filter(s=>s.c.includes(b)).map(s=>s.id):[]}); }
+      save(); render(); closeSheet(); toast(k?'Class saved':'Added '+n+'. Open spells to build its list.');
+    });
+    p.querySelector('#kDel')?.addEventListener('click',()=>{
+      const users=S.chars.filter(c=>c.cls===k.name).length;
+      $('#kConfirm').innerHTML='<p class="err">Delete '+esc(k.name)+'?'+(users?' '+users+' character(s) use it and will switch to Other.':'')+'</p><div class="actions"><button class="btn blood" type="button" id="kDel2">Yes, delete</button><button class="btn quiet" type="button" id="kKeep">Keep it</button></div>';
+      $('#kKeep').addEventListener('click',()=>$('#kConfirm').innerHTML='');
+      $('#kDel2').addEventListener('click',()=>{ S.chars.forEach(c=>{ if(c.cls===k.name) c.cls='Other'; }); S.classes=S.classes.filter(x=>x.id!==k.id); if(F.cls===k.name) F.cls=''; save(); closeSheet(); render(); toast('Class deleted'); });
+    });
+  });
+}
+
 function openChars(editId){
   const ed=editId?S.chars.find(c=>c.id===editId):null;
   const lst=S.chars.map(c=>`<li class="${c.id===S.active?'on':''}"><button class="pick" type="button" data-pick="${c.id}"><div class="n">${esc(c.name)}</div><div class="c">${esc(c.cls)} · level ${c.level} · ${Object.keys(c.known).length} spells</div></button><button class="btn quiet" type="button" data-edit="${c.id}">Edit</button></li>`).join('');
@@ -515,8 +588,12 @@ function openChars(editId){
   <h3 class="sec">${ed?'Edit '+esc(ed.name):'New character'}</h3>
   <form class="f" id="cf" novalidate>
     <label for="cn">Name<input id="cn" type="text" maxlength="40" value="${esc(ed?ed.name:'')}" placeholder="Ysolde of Fylson"></label>
-    <div class="two"><label for="cc">Class<select id="cc">${CLASSES.concat(['Other']).map(x=>`<option ${ed&&ed.cls===x?'selected':''}>${x}</option>`).join('')}</select></label>
+    <div class="two"><label for="cc">Class<select id="cc">${allClasses().concat(['Other']).map(x=>`<option ${ed&&ed.cls===x?'selected':''}>${esc(x)}</option>`).join('')}</select></label>
     <label for="cl">Level<input id="cl" type="number" min="1" max="20" inputmode="numeric" value="${ed?ed.level:1}"></label></div>
+    <label for="ca">Spellcasting ability<select id="ca"><option value="">Class default</option>${Object.entries(ABIL).map(([v,t])=>`<option value="${v}" ${ed&&ed.abil===v?'selected':''}>${t}</option>`).join('')}</select></label>
+    <div class="two"><label for="csc">Ability score<input id="csc" type="number" min="1" max="30" inputmode="numeric" value="${ed?ed.score||10:16}"></label>
+    <label for="cb">Extra bonus<input id="cb" type="number" min="-10" max="10" inputmode="numeric" value="${ed?ed.bonus||0:0}"></label></div>
+    <p class="note" style="margin:0">Extra bonus is for items or features that add to your spell save DC and attack, like a +1 wand.</p>
     <p class="err" id="cErr" hidden></p>
     <div class="actions"><button class="btn solid" type="submit">${ed?'Save changes':'Add character'}</button>${ed?'<button class="btn quiet" type="button" id="cNew">New character instead</button><button class="btn blood" type="button" id="cDel">Delete</button>':''}</div>
     <div id="cConfirm"></div>
@@ -528,7 +605,8 @@ function openChars(editId){
       ev.preventDefault();
       const n=$('#cn').value.trim(), cls=$('#cc').value, lv=Math.max(1,Math.min(20,parseInt($('#cl').value,10)||1));
       if(!n){ const er=$('#cErr'); er.textContent='Give the character a name.'; er.hidden=false; $('#cn').focus(); return; }
-      if(ed){ ed.name=n; ed.cls=cls; ed.level=lv; } else { const c=newChar(n,cls,lv); S.chars.push(c); S.active=c.id; }
+      const ab=$('#ca').value||null, sc=Math.max(1,Math.min(30,parseInt($('#csc').value,10)||10)), bo=Math.max(-10,Math.min(10,parseInt($('#cb').value,10)||0));
+      if(ed){ Object.assign(ed,{name:n,cls,level:lv,abil:ab,score:sc,bonus:bo}); } else { const c=Object.assign(newChar(n,cls,lv),{abil:ab,score:sc,bonus:bo}); S.chars.push(c); S.active=c.id; }
       save(); render(); closeSheet(); toast(ed?'Character saved':'Added '+n);
     });
     p.querySelector('#cDel')?.addEventListener('click',()=>{
