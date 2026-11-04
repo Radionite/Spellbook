@@ -237,6 +237,41 @@ input.num::-webkit-outer-spin-button,input.num::-webkit-inner-spin-button{-webki
 .tag{font-family:var(--util);font-size:10px;font-weight:600;letter-spacing:.08em;border:1px solid var(--line);color:var(--muted);padding:0 4px;border-radius:2px;margin-left:6px;vertical-align:2px}
 textarea.notes{width:100%;min-height:6rem;background:var(--void);border:1px solid var(--line);border-radius:3px;padding:8px 10px;font-family:var(--body);font-size:16px;color:var(--ink);line-height:1.45;resize:vertical}
 .toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:60;background:var(--pale);color:var(--void);font-family:var(--util);font-weight:600;font-size:14px;padding:9px 16px;border-radius:3px;box-shadow:0 6px 24px rgba(0,0,0,.5);max-width:calc(100% - 32px)}
+
+/* ---------- tablet and PC ---------- */
+.shgrid{display:block}
+@media (hover:hover){
+  .srow:hover .nm,.lrow:hover,.rowlist .t:hover,.chars .pick:hover .n{color:var(--gold-hi)}
+  .btn:hover{filter:brightness(1.12)}
+  .chip:hover{border-color:var(--gold)}
+  nav.tabs button:hover{color:var(--pale)}
+}
+@media (min-width:700px){
+  .wrap,nav.tabs .in{max-width:60rem}
+  ul.spells{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px}
+  .chap{columns:2;column-gap:24px}
+  .chap h3{column-span:all}
+  .lrow{break-inside:avoid}
+  .sheet{align-items:center;padding:24px}
+  .sheet .panel{max-width:42rem;border:1px solid var(--line);border-top:1px solid var(--gold);border-radius:6px;max-height:calc(100% - 48px)}
+  .shgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start}
+  .shgrid .col>h3.sec:first-child{margin-top:0}
+  .skills{columns:1}
+  .rests{max-width:30rem}
+}
+@media (min-width:1000px){
+  :root{--rail:210px}
+  header.top,main{padding-left:var(--rail)}
+  .wrap{max-width:68rem}
+  nav.tabs{top:0;right:auto;width:var(--rail);border-top:0;border-right:1px solid var(--line);padding-top:calc(env(safe-area-inset-top,0px) + 76px)}
+  nav.tabs .in{display:flex;flex-direction:column;gap:2px;padding:0 10px}
+  nav.tabs button{flex-direction:row;justify-content:flex-start;gap:12px;height:46px;padding:0 14px;border-radius:3px;font-size:14px;letter-spacing:.04em}
+  nav.tabs button[aria-selected="true"]{background:rgba(201,164,90,.1)}
+  main{padding-bottom:40px}
+  .toast{bottom:28px;left:calc(50% + var(--rail)/2)}
+  ul.spells{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .chap{columns:3}
+}
 </style>
 
 <header class="top"><div class="wrap">
@@ -618,6 +653,7 @@ function renderSheet(){
   const die=HD[c.cls]||(cclass(c.cls)?8:8);
   el.innerHTML=`<div class="sh-top"><div><div class="who2">${esc(c.name)}</div><div class="sub">${esc(c.cls)} ${c.level}${h.species?' · '+esc(h.species):''}${h.bg?' · '+esc(h.bg):''}</div></div>
     <button class="chip" type="button" id="insp" aria-pressed="${!!h.insp}">${h.insp?'✦ ':''}Heroic Inspiration</button></div>
+  <div class="shgrid"><div class="col">
   <div class="vit">
     <div class="cell hp"><div><span class="lab">Hit points</span><div class="big">${h.hp.cur}<span style="font-size:18px;color:var(--muted)"> / ${h.hp.max}</span>${h.hp.tmp?`<span style="font-size:17px;color:var(--veil)"> +${h.hp.tmp} temp</span>`:''}</div><div class="bar"><i style="width:${hpw}%"></i></div></div>
       <div class="hpctl"><input id="hpAmt" type="number" inputmode="numeric" min="0" placeholder="0" aria-label="Amount"><button class="btn blood" type="button" id="dmg">Damage</button><button class="btn" type="button" id="heal">Heal</button></div></div>
@@ -633,6 +669,7 @@ function renderSheet(){
   </div>
   <h3 class="sec">Abilities</h3>
   <div class="abil">${AB.map(([k,n])=>`<div class="cell"><span class="lab">${n}</span><div class="big">${sgn(mod(k))}</div><input class="num sm" data-ab="${k}" type="number" inputmode="numeric" min="1" max="30" value="${h.ab[k]}" aria-label="${n} score"><button class="sv" type="button" data-sv="${k}"><span class="dot ${h.sv[k]?'on':''}"></span>Save ${sgn(sv(k))}</button></div>`).join('')}</div>
+  </div><div class="col">
   <h3 class="sec">Skills</h3>
   <p class="lead" style="font-size:15px">Tap a skill: proficient, then expertise, then off.</p>
   <div class="skills">${SKILLS.map(x=>`<button type="button" data-sk="${x[0]}"><span class="dot ${h.sk[x[0]]===2?'ex':h.sk[x[0]]===1?'on':''}"></span><span class="v">${sgn(sk(x))}</span>${x[0]}<span class="a">${x[1].toUpperCase()}</span></button>`).join('')}</div>
@@ -652,6 +689,7 @@ function renderSheet(){
   <label for="n-equip">Equipment<textarea class="notes" id="n-equip">${esc(h.notes.equip)}</textarea></label>
   <label for="n-prof">Training and proficiencies<textarea class="notes" id="n-prof">${esc(h.notes.prof)}</textarea></label>
   <div class="two"><label for="f-species">Species<input id="f-species" type="text" value="${esc(h.species)}" placeholder="Taivari"></label><label for="f-bg">Background<input id="f-bg" type="text" value="${esc(h.bg)}"></label></div></div>
+  </div></div>
   <div class="rests"><button class="btn quiet" type="button" id="shShort">Short rest</button><button class="btn solid" type="button" id="shLong">Long rest</button></div>
   <p class="note">Short rest refills SR features${isPact(c)?' and Pact slots':''}. Long rest refills HP, hit dice, spell slots and all features, and removes one level of exhaustion.</p>`;
   const S2=()=>{save();renderSheet();};
@@ -748,7 +786,8 @@ function openLore(id){
 function openSheet(html,bind){ $('#panel').innerHTML=html; $('#sheet').hidden=false; document.body.style.overflow='hidden'; $('#panel').scrollTop=0; bind&&bind($('#panel')); $('#panel .x')?.focus(); }
 function closeSheet(){ $('#sheet').hidden=true; document.body.style.overflow=''; }
 $('#sheet').addEventListener('click',e=>{ if(e.target.id==='sheet'||e.target.closest('.x')) closeSheet(); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#sheet').hidden) closeSheet(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#sheet').hidden) closeSheet();
+  if(e.key==='/'&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)&&$('#sheet').hidden){ const q=S.ui.tab==='world'?$('#wq'):S.ui.tab==='spells'?$('#q'):null; if(q){ e.preventDefault(); q.focus(); } } });
 
 function openSpell(id){
   const s=byId(id); if(!s) return; const c=me();
