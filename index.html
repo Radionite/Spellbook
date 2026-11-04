@@ -248,6 +248,7 @@ textarea.notes{width:100%;min-height:6rem;background:var(--void);border:1px soli
 .sub4{font-family:var(--display);font-weight:600;font-size:19px;color:var(--gold-hi);margin:16px 0 4px}
 img.portrait{width:56px;height:56px;border-radius:50%;object-fit:cover;border:1px solid var(--gold);flex:none}
 img.portrait.lg{width:96px;height:96px}
+.vh{position:absolute!important;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0);pointer-events:none}
 .toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:60;background:var(--pale);color:var(--void);font-family:var(--util);font-weight:600;font-size:14px;padding:9px 16px;border-radius:3px;box-shadow:0 6px 24px rgba(0,0,0,.5);max-width:calc(100% - 32px)}
 
 /* ---------- tablet and PC ---------- */
@@ -586,7 +587,7 @@ function renderBrew(){
   <h3 class="sec">Import</h3>
   <p class="lead">Paste homebrew or a backup, or pick a file. Homebrew is added to yours. A backup replaces everything on this phone.</p>
   <textarea class="io" id="ioText" aria-label="Paste homebrew or backup here" placeholder="Paste here"></textarea>
-  <div class="actions"><button class="btn solid" type="button" id="doImport">Import pasted text</button><label class="btn quiet" for="ioFile" style="display:inline-flex;align-items:center">Pick a file</label><input id="ioFile" type="file" accept=".json,application/json,text/plain" hidden></div>
+  <div class="actions"><button class="btn solid" type="button" id="doImport">Import pasted text</button><button class="btn quiet" type="button" id="ioPick">Pick a file</button><input id="ioFile" class="vh" type="file" accept=".json,application/json,text/plain" tabindex="-1" aria-hidden="true"></div>
   <p class="err" id="ioErr" hidden></p>
   <p class="attr">SRD spells: this app includes material from the System Reference Document 5.2.1 (“SRD 5.2.1”) by Wizards of the Coast LLC, available at <a href="https://www.dndbeyond.com/srd" target="_blank" rel="noopener">dndbeyond.com/srd</a>, licensed under the <a href="https://creativecommons.org/licenses/by/4.0/legalcode" target="_blank" rel="noopener">Creative Commons Attribution 4.0 International License</a>.</p>`;
   $('#newBrew').addEventListener('click',()=>openForm(null));
@@ -602,6 +603,7 @@ function renderBrew(){
   $('#dlBrew').addEventListener('click',()=>dl(brewText(),'eidolon-vhar-homebrew.json'));
   $('#dlAll').addEventListener('click',()=>dl(allText(),'eidolon-vhar-spellbook-backup.json'));
   $('#doImport').addEventListener('click',()=>doImport($('#ioText').value));
+  $('#ioPick').addEventListener('click',()=>{ const i=$('#ioFile'); i.value=''; i.click(); });
   $('#ioFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>doImport(String(r.result));r.readAsText(f);});
 }
 function copy(text,msg){
@@ -795,7 +797,7 @@ function extrasHTML(c,h){
   <div class="checks"><label for="g-big"><input type="checkbox" id="g-big" ${g.big?'checked':''}>Counts as one size larger for carrying (like Powerful Build)</label></div>
   <h3 class="sec" style="margin-top:28px">Story</h3>
   <div class="shgrid"><div class="col">
-    <div class="actions" style="margin-top:0">${st.pic?`<img class="portrait lg" src="${st.pic}" alt="Portrait">`:''}<label class="btn quiet" for="s-pic" style="display:inline-flex;align-items:center">${st.pic?'Change portrait':'Add portrait'}</label><input id="s-pic" type="file" accept="image/*" hidden>${st.pic?'<button class="btn quiet" type="button" id="s-picdel">Remove</button>':''}</div>
+    <div class="actions" style="margin-top:0">${st.pic?`<img class="portrait lg" src="${st.pic}" alt="Portrait">`:''}<button class="btn quiet" type="button" id="s-picbtn">${st.pic?'Change portrait':'Add portrait'}</button><input id="s-pic" class="vh" type="file" accept="image/*" tabindex="-1" aria-hidden="true">${st.pic?'<button class="btn quiet" type="button" id="s-picdel">Remove</button>':''}</div>
     <div class="f" style="display:grid;gap:12px;margin-top:12px">
       <label for="s-look">Appearance<textarea class="notes" id="s-look">${esc(st.look)}</textarea></label>
       <label for="s-pers">Personality<textarea class="notes" id="s-pers">${esc(st.pers)}</textarea></label></div>
@@ -829,11 +831,18 @@ function bindExtras(c,h,el,S2){
   $('#g-big').addEventListener('change',e=>{g.big=e.target.checked;S2();});
   ['look','pers','ideals','bonds','flaws','back'].forEach(k=>$('#s-'+k).addEventListener('input',e=>{st[k]=e.target.value;save();}));
   $('#s-picdel')?.addEventListener('click',()=>{st.pic='';S2();});
-  $('#s-pic').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader();
-    r.onload=()=>{ const im=new Image(); im.onload=()=>{ const sz=360, cv=document.createElement('canvas'), sc=Math.max(sz/im.width,sz/im.height); cv.width=sz; cv.height=sz;
-      cv.getContext('2d').drawImage(im,(sz-im.width*sc)/2,(sz-im.height*sc)/2,im.width*sc,im.height*sc); st.pic=cv.toDataURL('image/jpeg',.8); S2(); toast('Portrait saved'); };
-      im.onerror=()=>toast('That file is not a picture the app can read.'); im.src=r.result; };
-    r.readAsDataURL(f); });
+  $('#s-picbtn').addEventListener('click',()=>{ const i=$('#s-pic'); i.value=''; i.click(); });
+  $('#s-pic').addEventListener('change',e=>{ const f=e.target.files&&e.target.files[0]; if(f) setPortrait(f,st,S2); });
+}
+// Shrink a photo to a 360px square and keep it with the character
+async function setPortrait(f,st,done){
+  const sz=360, cv=document.createElement('canvas'); cv.width=sz; cv.height=sz; const cx=cv.getContext('2d');
+  const draw=(src,w,h)=>{ const sc=Math.max(sz/w,sz/h); cx.drawImage(src,(sz-w*sc)/2,(sz-h*sc)/2,w*sc,h*sc); };
+  try{
+    if(window.createImageBitmap){ const bm=await createImageBitmap(f); draw(bm,bm.width,bm.height); bm.close&&bm.close(); }
+    else { const url=URL.createObjectURL(f); await new Promise((ok,bad)=>{ const im=new Image(); im.onload=()=>{ draw(im,im.naturalWidth,im.naturalHeight); URL.revokeObjectURL(url); ok(); }; im.onerror=bad; im.src=url; }); }
+    st.pic=cv.toDataURL('image/jpeg',.8); done(); toast('Portrait saved');
+  }catch(err){ toast('The app could not read that picture. Try a JPG or PNG, or take a screenshot of it.'); }
 }
 function openThing(kind,idx){
   const c=me(), h=sheetOf(c), v=veilOf(h), g=gearOf(h);
