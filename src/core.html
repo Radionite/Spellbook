@@ -236,6 +236,9 @@ input.num::-webkit-outer-spin-button,input.num::-webkit-inner-spin-button{-webki
 .uses button.spent i{background:transparent;border-color:rgba(201,164,90,.45)}
 .tag{font-family:var(--util);font-size:10px;font-weight:600;letter-spacing:.08em;border:1px solid var(--line);color:var(--muted);padding:0 4px;border-radius:2px;margin-left:6px;vertical-align:2px}
 textarea.notes{width:100%;min-height:6rem;background:var(--void);border:1px solid var(--line);border-radius:3px;padding:8px 10px;font-family:var(--body);font-size:16px;color:var(--ink);line-height:1.45;resize:vertical}
+.sub4{font-family:var(--display);font-weight:600;font-size:19px;color:var(--gold-hi);margin:16px 0 4px}
+img.portrait{width:56px;height:56px;border-radius:50%;object-fit:cover;border:1px solid var(--gold);flex:none}
+img.portrait.lg{width:96px;height:96px}
 .toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:60;background:var(--pale);color:var(--void);font-family:var(--util);font-weight:600;font-size:14px;padding:9px 16px;border-radius:3px;box-shadow:0 6px 24px rgba(0,0,0,.5);max-width:calc(100% - 32px)}
 
 /* ---------- tablet and PC ---------- */
@@ -651,8 +654,8 @@ function renderSheet(){
   const sv=k=>mod(k)+(h.sv[k]?pb:0), sk=([n,k])=>mod(k)+(h.sk[n]===2?pb*2:h.sk[n]===1?pb:0);
   const perc=10+sk(['Perception','wis']), hpw=Math.max(0,Math.min(100,Math.round(100*h.hp.cur/Math.max(1,h.hp.max))));
   const die=HD[c.cls]||(cclass(c.cls)?8:8);
-  el.innerHTML=`<div class="sh-top"><div><div class="who2">${esc(c.name)}</div><div class="sub">${esc(c.cls)} ${c.level}${h.species?' · '+esc(h.species):''}${h.bg?' · '+esc(h.bg):''}</div></div>
-    <button class="chip" type="button" id="insp" aria-pressed="${!!h.insp}">${h.insp?'✦ ':''}Heroic Inspiration</button></div>
+  el.innerHTML=`<div class="sh-top">${h.story&&h.story.pic?`<img class="portrait" src="${h.story.pic}" alt="Portrait of ${esc(c.name)}">`:''}<div style="flex:1;min-width:0"><div class="who2">${esc(c.name)}</div><div class="sub">${esc(c.cls)} ${c.level}${h.species?' · '+esc(h.species):''}${h.bg?' · '+esc(h.bg):''}</div></div>
+    <div class="castrow" style="margin:0"><button class="chip" type="button" id="insp" aria-pressed="${!!h.insp}">${h.insp?'✦ ':''}Heroic Inspiration</button>${c.level<20?'<button class="chip" type="button" id="lvlUp">Level up</button>':''}</div></div>
   <div class="shgrid"><div class="col">
   <div class="vit">
     <div class="cell hp"><div><span class="lab">Hit points</span><div class="big">${h.hp.cur}<span style="font-size:18px;color:var(--muted)"> / ${h.hp.max}</span>${h.hp.tmp?`<span style="font-size:17px;color:var(--veil)"> +${h.hp.tmp} temp</span>`:''}</div><div class="bar"><i style="width:${hpw}%"></i></div></div>
@@ -690,9 +693,12 @@ function renderSheet(){
   <label for="n-prof">Training and proficiencies<textarea class="notes" id="n-prof">${esc(h.notes.prof)}</textarea></label>
   <div class="two"><label for="f-species">Species<input id="f-species" type="text" value="${esc(h.species)}" placeholder="Taivari"></label><label for="f-bg">Background<input id="f-bg" type="text" value="${esc(h.bg)}"></label></div></div>
   </div></div>
+  ${extrasHTML(c,h)}
   <div class="rests"><button class="btn quiet" type="button" id="shShort">Short rest</button><button class="btn solid" type="button" id="shLong">Long rest</button></div>
   <p class="note">Short rest refills SR features${isPact(c)?' and Pact slots':''}. Long rest refills HP, hit dice, spell slots and all features, and removes one level of exhaustion.</p>`;
   const S2=()=>{save();renderSheet();};
+  bindExtras(c,h,el,S2);
+  $('#lvlUp')?.addEventListener('click',()=>openLevelUp(c));
   const num=(id,fn)=>$('#'+id).addEventListener('change',e=>{ const v=parseInt(e.target.value,10); if(!isNaN(v)){ fn(v); S2(); } });
   num('f-ac',v=>h.ac=v-(h.shield?2:0)); num('f-init',v=>h.initAdj=v-mod('dex')); num('f-pass',v=>h.passAdj=v-perc); num('f-speed',v=>h.speed=Math.max(0,v)); num('f-hpmax',v=>{h.hp.max=Math.max(1,v); h.hp.cur=Math.min(h.hp.cur,h.hp.max);}); num('f-tmp',v=>h.hp.tmp=Math.max(0,v));
   el.querySelectorAll('[data-ab]').forEach(i=>i.addEventListener('change',e=>{ const v=parseInt(e.target.value,10); if(!isNaN(v)){ h.ab[i.dataset.ab]=Math.max(1,Math.min(30,v)); S2(); } }));
@@ -732,6 +738,137 @@ function openItem(kind,idx){
       else { const mx=Math.max(0,Math.min(20,parseInt($('#i-max').value,10)||0)); o={n,src:$('#i-src').value,lvl:parseInt($('#i-lvl').value,10)||null,max:mx,used:Math.min(it.used||0,mx),rest:$('#i-rest').value,x:$('#i-x').value}; }
       if(isNew) list.push(o); else list[+idx]=o; save(); closeSheet(); renderSheet(); });
     p.querySelector('#iDel')?.addEventListener('click',()=>{ list.splice(+idx,1); save(); closeSheet(); renderSheet(); toast('Deleted'); });
+  });
+}
+
+/* ---------- sheet extras: Under the Veil, money and gear, story, level up ---------- */
+const STAGES=[['None','No plague.'],['1. The Echo','Voices nobody else hears. Disadvantage on Intelligence checks to recall things.'],['2. The Glassing','Crystal veins under the skin. Max HP −1d10 each dawn. Casting a spell: roll d20, on 1–3 it misfires.'],['3. The Unmaking','The body loses its shape and you forget your name. No known cure.']];
+function veilOf(h){ h.veil=h.veil||{mem:[],brill:false,cloak:false,stage:0,ps:0,pf:0,dev:0,devC:0,runes:[],relics:[]}; return h.veil; }
+function gearOf(h){ h.gear=h.gear||{cp:0,sp:0,gp:0,items:[],big:false}; return h.gear; }
+function storyOf(h){ h.story=h.story||{pic:'',look:'',pers:'',ideals:'',bonds:'',flaws:'',back:''}; return h.story; }
+const usesPips=(max,used,attr,i)=>max?Array.from({length:max},(_,j)=>`<button type="button" class="${j>=max-(used||0)?'spent':''}" ${attr}="${i}" aria-label="Use ${j+1}"><i></i></button>`).join(''):'';
+const fmt=n=>n.toLocaleString('en',{maximumFractionDigits:1});
+function extrasHTML(c,h){
+  const v=veilOf(h), g=gearOf(h), st=storyOf(h);
+  const wt=g.items.reduce((a,x)=>a+(+x.w||0)*(+x.q||1),0), cap=(h.ab.str||10)*15*(g.big?2:1);
+  return `<h3 class="sec" style="margin-top:28px">Under the Veil</h3>
+  <div class="actions" style="margin-top:0"><button class="btn" type="button" id="dawn">Dawn</button><span class="note" style="align-self:center">Recharges runes and relics. Then re-mark your runes and roll any plague or fading saves.</span></div>
+  <div class="shgrid" style="margin-top:6px"><div class="col">
+    <h4 class="sub4">The Fading</h4>
+    <p class="note" style="font-style:normal">In the open Fadelands, make a Wisdom save at dawn: DC 12 at the edge, 15 deep in, 18 where the land blurs. On a failure you gain 1 Exhaustion and lose a memory.</p>
+    <div class="checks"><label for="v-brill"><input type="checkbox" id="v-brill" ${v.brill?'checked':''}>Carrying worked Brill (Advantage)</label><label for="v-cloak"><input type="checkbox" id="v-cloak" ${v.cloak?'checked':''}>Brill cloak (automatic success)</label></div>
+    <ul class="rowlist">${v.mem.map((m,i)=>`<li><span class="t" style="font-size:16.5px;font-weight:500">${esc(m)}</span><button class="linkbtn" type="button" data-memdel="${i}">Remove</button></li>`).join('')}</ul>
+    <form class="hpctl" id="memf" style="margin-top:8px"><input id="v-mem" type="text" style="flex:1;width:auto;text-align:left" placeholder="A memory lost to the fading" aria-label="Memory lost"><button class="btn quiet" type="submit">Add</button></form>
+    <h4 class="sub4">The Mana Plague</h4>
+    <div class="pipsrow">${[0,1,2,3].map(i=>`<button type="button" class="${i===0?(v.stage===0?'ok on':''):(v.stage===i?'on':'')}" data-stage="${i}" aria-label="Stage ${i}">${i||'–'}</button>`).join('')}<span class="note" style="margin-left:6px">${esc(STAGES[v.stage][0])}</span></div>
+    <p class="note" style="font-style:normal;margin:6px 0">${esc(STAGES[v.stage][1])}</p>
+    ${v.stage?`<div class="pipsrow"><span class="note">Dawn saves: pass</span>${[0,1,2].map(i=>`<button type="button" class="ok ${v.ps>i?'on':''}" data-pl="ps" aria-label="Pass">✓</button>`).join('')}<span class="note" style="margin-left:8px">fail</span>${[0,1,2].map(i=>`<button type="button" class="${v.pf>i?'on':''}" data-pl="pf" aria-label="Fail">✕</button>`).join('')}</div><p class="note">Constitution save each dawn. 3 failures: next stage. 3 successes end stage 1.</p>`:''}
+    <h4 class="sub4">Devinum shards</h4>
+    <div class="trio" style="justify-content:flex-start;font-size:14px;gap:16px">
+      <span>Clean <button class="chip" type="button" data-dev="dev:-1" aria-label="One less clean shard">−</button> <b style="color:var(--gold-hi);font-size:18px">${v.dev}</b> <button class="chip" type="button" data-dev="dev:1" aria-label="One more clean shard">+</button></span>
+      <span>Corrupt <button class="chip" type="button" data-dev="devC:-1" aria-label="One less corrupt shard">−</button> <b style="color:var(--blood-hi);font-size:18px">${v.devC}</b> <button class="chip" type="button" data-dev="devC:1" aria-label="One more corrupt shard">+</button></span></div>
+    <p class="note">Crush one to cast a level 1–3 spell without a slot, cast one slot level higher, or regain a rune or relic use. Every shard weakens the Veil.</p>
+  </div><div class="col">
+    <h4 class="sub4">Runes borne</h4>
+    ${v.runes.length?`<ul class="rowlist">${v.runes.map((r,i)=>`<li><button class="t" type="button" data-rune="${i}">${esc(r.n)}<span class="tag" style="${r.m?'color:var(--gold-hi);border-color:var(--gold)':''}">${r.m?'MARKED':'DARK'}</span></button><span class="uses">${usesPips(r.max,r.used,'data-ruse',i)}</span><span class="m">${esc([r.slot,r.x].filter(Boolean).join(' · '))}</span></li>`).join('')}</ul>`:'<p class="note">No runes yet.</p>'}
+    <div class="actions"><button class="btn quiet" type="button" data-rune="new">Add rune</button></div>
+    <h4 class="sub4">Relics</h4>
+    ${v.relics.length?`<ul class="rowlist">${v.relics.map((r,i)=>`<li><button class="t" type="button" data-relic="${i}">${esc(r.n)}${r.a?'<span class="tag">ATTUNED</span>':''}</button><span class="uses">${usesPips(r.max,r.used,'data-reuse',i)}</span><span class="m">${esc(r.x||'')}</span></li>`).join('')}</ul>`:'<p class="note">No relics yet.</p>'}
+    <div class="actions"><button class="btn quiet" type="button" data-relic="new">Add relic</button></div>
+  </div></div>
+  <h3 class="sec" style="margin-top:28px">Money and gear</h3>
+  <div class="vit" style="max-width:30rem">${[['cp','Copper'],['sp','Silver'],['gp','Gold']].map(([k,n])=>`<div class="cell"><span class="lab">${n}</span><input class="num" data-coin="${k}" type="number" inputmode="numeric" min="0" value="${g[k]}" aria-label="${n} pieces"></div>`).join('')}</div>
+  <p class="note">Silver is the standard: where a rulebook says gp, pay that many sp. All together: ${fmt(g.sp+g.cp/10+g.gp*10)} sp.</p>
+  ${g.items.length?`<ul class="rowlist">${g.items.map((x,i)=>`<li><button class="t" type="button" data-item="${i}">${esc(x.n)}${(+x.q||1)>1?` <span style="color:var(--muted);font-weight:400">×${+x.q}</span>`:''}</button><span style="font-family:var(--util);font-size:13px;color:var(--muted)">${fmt((+x.w||0)*(+x.q||1))} lb</span>${x.x?`<span class="m">${esc(x.x)}</span>`:''}</li>`).join('')}</ul>`:'<p class="note">No items yet.</p>'}
+  <div class="actions"><button class="btn quiet" type="button" data-item="new">Add item</button></div>
+  <div class="count" style="margin-top:8px"><span style="${wt>cap?'color:var(--blood-hi)':''}">Carrying ${fmt(wt)} of ${cap} lb${wt>cap?' · over capacity':''}</span></div>
+  <div class="checks"><label for="g-big"><input type="checkbox" id="g-big" ${g.big?'checked':''}>Counts as one size larger for carrying (like Powerful Build)</label></div>
+  <h3 class="sec" style="margin-top:28px">Story</h3>
+  <div class="shgrid"><div class="col">
+    <div class="actions" style="margin-top:0">${st.pic?`<img class="portrait lg" src="${st.pic}" alt="Portrait">`:''}<label class="btn quiet" for="s-pic" style="display:inline-flex;align-items:center">${st.pic?'Change portrait':'Add portrait'}</label><input id="s-pic" type="file" accept="image/*" hidden>${st.pic?'<button class="btn quiet" type="button" id="s-picdel">Remove</button>':''}</div>
+    <div class="f" style="display:grid;gap:12px;margin-top:12px">
+      <label for="s-look">Appearance<textarea class="notes" id="s-look">${esc(st.look)}</textarea></label>
+      <label for="s-pers">Personality<textarea class="notes" id="s-pers">${esc(st.pers)}</textarea></label></div>
+  </div><div class="col"><div class="f" style="display:grid;gap:12px">
+      <label for="s-ideals">Ideals<textarea class="notes" id="s-ideals" style="min-height:3.5rem">${esc(st.ideals)}</textarea></label>
+      <label for="s-bonds">Bonds<textarea class="notes" id="s-bonds" style="min-height:3.5rem">${esc(st.bonds)}</textarea></label>
+      <label for="s-flaws">Flaws<textarea class="notes" id="s-flaws" style="min-height:3.5rem">${esc(st.flaws)}</textarea></label>
+      <label for="s-back">Backstory<textarea class="notes" id="s-back" style="min-height:9rem">${esc(st.back)}</textarea></label></div></div></div>`;
+}
+function bindExtras(c,h,el,S2){
+  const v=veilOf(h), g=gearOf(h), st=storyOf(h);
+  $('#v-brill').addEventListener('change',e=>{v.brill=e.target.checked;save();});
+  $('#v-cloak').addEventListener('change',e=>{v.cloak=e.target.checked;save();});
+  $('#memf').addEventListener('submit',e=>{e.preventDefault();const t=$('#v-mem').value.trim();if(t){v.mem.push(t);S2();}});
+  el.querySelectorAll('[data-memdel]').forEach(b=>b.addEventListener('click',()=>{v.mem.splice(+b.dataset.memdel,1);S2();}));
+  el.querySelectorAll('[data-stage]').forEach(b=>b.addEventListener('click',()=>{v.stage=+b.dataset.stage;v.ps=0;v.pf=0;S2();}));
+  el.querySelectorAll('[data-pl]').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.pl; v[k]=Math.max(0,b.classList.contains('on')?v[k]-1:v[k]+1);
+    if(v.pf>=3){ v.stage=Math.min(3,v.stage+1); v.ps=0; v.pf=0; toast('The plague worsens: '+STAGES[v.stage][0]); }
+    else if(v.ps>=3&&v.stage===1){ v.stage=0; v.ps=0; v.pf=0; toast('The Echo fades. The plague is gone.'); }
+    else if(v.ps>=3){ v.ps=3; toast('Only stage 1 ends with three passes. Treatment can help.'); }
+    S2(); }));
+  el.querySelectorAll('[data-dev]').forEach(b=>b.addEventListener('click',()=>{ const [k,d]=b.dataset.dev.split(':'); v[k]=Math.max(0,v[k]+ +d); S2(); }));
+  el.querySelectorAll('[data-ruse]').forEach(b=>b.addEventListener('click',()=>{ const r=v.runes[+b.dataset.ruse]; r.used=Math.max(0,Math.min(r.max,(r.used||0)+(b.classList.contains('spent')?-1:1))); S2(); }));
+  el.querySelectorAll('[data-reuse]').forEach(b=>b.addEventListener('click',()=>{ const r=v.relics[+b.dataset.reuse]; r.used=Math.max(0,Math.min(r.max,(r.used||0)+(b.classList.contains('spent')?-1:1))); S2(); }));
+  el.querySelectorAll('button[data-rune]').forEach(b=>b.addEventListener('click',()=>openThing('rune',b.dataset.rune)));
+  el.querySelectorAll('button[data-relic]').forEach(b=>b.addEventListener('click',()=>openThing('relic',b.dataset.relic)));
+  el.querySelectorAll('button[data-item]').forEach(b=>b.addEventListener('click',()=>openThing('item',b.dataset.item)));
+  $('#dawn').addEventListener('click',()=>{ v.runes.forEach(r=>{ r.used=0; if(!r.brill) r.m=false; }); v.relics.forEach(r=>r.used=0); S2();
+    toast('Dawn: runes and relics recharged.'+(v.runes.some(r=>!r.m)?' Tap a rune to re-mark it.':'')+(v.stage?' Roll your plague save.':'')); });
+  el.querySelectorAll('[data-coin]').forEach(i=>i.addEventListener('change',e=>{ g[i.dataset.coin]=Math.max(0,parseInt(e.target.value,10)||0); S2(); }));
+  $('#g-big').addEventListener('change',e=>{g.big=e.target.checked;S2();});
+  ['look','pers','ideals','bonds','flaws','back'].forEach(k=>$('#s-'+k).addEventListener('input',e=>{st[k]=e.target.value;save();}));
+  $('#s-picdel')?.addEventListener('click',()=>{st.pic='';S2();});
+  $('#s-pic').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader();
+    r.onload=()=>{ const im=new Image(); im.onload=()=>{ const sz=360, cv=document.createElement('canvas'), sc=Math.max(sz/im.width,sz/im.height); cv.width=sz; cv.height=sz;
+      cv.getContext('2d').drawImage(im,(sz-im.width*sc)/2,(sz-im.height*sc)/2,im.width*sc,im.height*sc); st.pic=cv.toDataURL('image/jpeg',.8); S2(); toast('Portrait saved'); };
+      im.onerror=()=>toast('That file is not a picture the app can read.'); im.src=r.result; };
+    r.readAsDataURL(f); });
+}
+function openThing(kind,idx){
+  const c=me(), h=sheetOf(c), v=veilOf(h), g=gearOf(h);
+  const list=kind==='rune'?v.runes:kind==='relic'?v.relics:g.items, isNew=idx==='new';
+  const it=isNew?{n:'',slot:'',x:'',max:1,used:0,m:true,brill:false,a:false,q:1,w:0}:list[+idx];
+  const body=kind==='rune'?`
+    <label for="t-n">Rune<input id="t-n" type="text" value="${esc(it.n)}"></label>
+    <label for="t-slot">Slot (item or skin)<input id="t-slot" type="text" value="${esc(it.slot||'')}" placeholder="Left forearm, shield boss"></label>
+    <label for="t-x">Effect<textarea id="t-x" style="min-height:5rem">${esc(it.x||'')}</textarea></label>
+    <label for="t-max">Uses per dawn (0 = no limit)<input id="t-max" type="number" min="0" max="10" value="${it.max||0}"></label>
+    <div class="checks"><label for="t-m"><input type="checkbox" id="t-m" ${it.m?'checked':''}>Marked this dawn</label><label for="t-brill"><input type="checkbox" id="t-brill" ${it.brill?'checked':''}>On Brill (holds without re-marking)</label></div>`
+   :kind==='relic'?`
+    <label for="t-n">Relic<input id="t-n" type="text" value="${esc(it.n)}"></label>
+    <label for="t-x">Effect<textarea id="t-x" style="min-height:5rem">${esc(it.x||'')}</textarea></label>
+    <label for="t-max">Uses per dawn (0 = no limit)<input id="t-max" type="number" min="0" max="10" value="${it.max||0}"></label>
+    <div class="checks"><label for="t-a"><input type="checkbox" id="t-a" ${it.a?'checked':''}>Attuned</label></div>`
+   :`<label for="t-n">Item<input id="t-n" type="text" value="${esc(it.n)}"></label>
+    <div class="two"><label for="t-q">How many<input id="t-q" type="number" min="1" value="${it.q||1}"></label><label for="t-w">Weight each (lb)<input id="t-w" type="number" min="0" step="0.1" value="${it.w||0}"></label></div>
+    <label for="t-x">Notes<input id="t-x" type="text" value="${esc(it.x||'')}"></label>`;
+  openSheet(`<div class="ph"><div><h2>${isNew?'Add':'Edit'} ${kind}</h2><div class="sub">${esc(c.name)}</div></div><button class="x" type="button" aria-label="Close">×</button></div>
+  <form class="f" id="thf" novalidate>${body}<p class="err" id="tErr" hidden></p><div class="actions"><button class="btn solid" type="submit">Save</button>${isNew?'':'<button class="btn blood" type="button" id="tDel">Delete</button>'}</div></form>`, p=>{
+    p.querySelector('#thf').addEventListener('submit',ev=>{ ev.preventDefault(); const n=$('#t-n').value.trim(); if(!n){ const er=$('#tErr'); er.textContent='Give it a name.'; er.hidden=false; return; }
+      let o; const mx=()=>Math.max(0,Math.min(10,parseInt($('#t-max').value,10)||0));
+      if(kind==='rune') o={n,slot:$('#t-slot').value.trim(),x:$('#t-x').value.trim(),max:mx(),used:Math.min(it.used||0,mx()),m:$('#t-m').checked,brill:$('#t-brill').checked};
+      else if(kind==='relic') o={n,x:$('#t-x').value.trim(),max:mx(),used:Math.min(it.used||0,mx()),a:$('#t-a').checked};
+      else o={n,q:Math.max(1,parseInt($('#t-q').value,10)||1),w:Math.max(0,parseFloat($('#t-w').value)||0),x:$('#t-x').value.trim()};
+      if(isNew) list.push(o); else list[+idx]=o; save(); closeSheet(); renderSheet(); });
+    p.querySelector('#tDel')?.addEventListener('click',()=>{ list.splice(+idx,1); save(); closeSheet(); renderSheet(); toast('Deleted'); });
+  });
+}
+function openLevelUp(c){
+  const h=sheetOf(c), die=HD[c.cls]||8, con=md5(h.ab.con||10), avg=Math.max(1,Math.floor(die/2)+1+con), nl=c.level+1;
+  const nxt=Object.assign({},c,{level:nl});
+  const before=topLevel(c), after=topLevel(nxt), pbB=prof(c.level), pbA=prof(nl);
+  const row=(a,b)=>`<li><span class="t" style="font-size:16.5px">${a}</span><span>${b}</span></li>`;
+  openSheet(`<div class="ph"><div><h2>Level ${nl}</h2><div class="sub">${esc(c.name)} · ${esc(c.cls)}</div></div><button class="x" type="button" aria-label="Close">×</button></div>
+  <form class="f" id="luf" novalidate>
+    <label for="lu-hp">Hit points gained<input id="lu-hp" type="number" min="1" value="${avg}"></label>
+    <p class="note" style="margin:0">The average is ${avg}: ${Math.floor(die/2)+1} for a d${die}, plus Constitution ${sgn(con)}. If you rolled, type your roll plus ${sgn(con)}.</p>
+    <ul class="rowlist">${row('Hit dice',c.level+' → '+nl)}${pbA>pbB?row('Proficiency bonus',sgn(pbB)+' → '+sgn(pbA)):''}${after>before?row('New spell level',ORD[after]+'-level slots'):''}${autoPrep(c)!==null&&!Number.isInteger(c.prepLimit)&&autoPrep(nxt)!==autoPrep(c)?row('Prepared spells',autoPrep(c)+' → '+autoPrep(nxt)):''}</ul>
+    <p class="note" style="margin:0">Spell slots update by themselves${wantsFull(c)?', and new class spells go into the spellbook':''}. Add any new features on the sheet afterwards.</p>
+    <div class="actions"><button class="btn solid" type="submit">Level up</button></div>
+  </form>`, p=>{
+    p.querySelector('#luf').addEventListener('submit',ev=>{ ev.preventDefault(); const gain=Math.max(1,parseInt($('#lu-hp').value,10)||1);
+      c.level=nl; h.hp.max+=gain; h.hp.cur+=gain; save(); closeSheet(); render(); toast(c.name+' is now level '+nl+' · +'+gain+' HP'); });
   });
 }
 
