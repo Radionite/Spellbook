@@ -1,4 +1,4 @@
-# Eidolon Vhar Spellbook
+# Eidolon Vhar
 
 A spellbook for phones for the 2024 fifth edition rules, made for the Eidolon Vhar campaign. This is an unofficial fan project, not made or endorsed by Wizards of the Coast. Install it from your browser ("Add to Home screen") and it works offline.
 

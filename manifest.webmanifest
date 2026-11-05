@@ -1,6 +1,6 @@
 {
- "name": "Eidolon Vhar Spellbook",
- "short_name": "Spellbook",
+ "name": "Eidolon Vhar",
+ "short_name": "Eidolon Vhar",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",

@@ -26,7 +26,7 @@ def icon(n,pad):
   d.line([(c,c-k),(c,c+k)],fill=(11,10,13),width=max(2,n//90))
   return im
 icon(192,0.12).save(os.path.join(out,'icon-192.png')); icon(512,0.12).save(os.path.join(out,'icon-512.png')); icon(180,0.1).save(os.path.join(out,'apple-touch-icon.png'))
-man={"name":"Eidolon Vhar Spellbook","short_name":"Spellbook","start_url":"./","scope":"./","display":"standalone","background_color":"#0b0a0d","theme_color":"#0b0a0d","orientation":"portrait",
+man={"name":"Eidolon Vhar","short_name":"Eidolon Vhar","start_url":"./","scope":"./","display":"standalone","background_color":"#0b0a0d","theme_color":"#0b0a0d","orientation":"portrait",
  "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},{"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}
 json.dump(man,open(os.path.join(out,'manifest.webmanifest'),'w'),indent=1)
 head='''<!doctype html>
@@ -43,7 +43,7 @@ sw_reg='''<script>if('serviceWorker' in navigator){addEventListener('load',()=>n
 '''
 html=head+core.replace('<header class="top">','</head><body>\n<header class="top">',1)+sw_reg+'</body></html>\n'
 open(os.path.join(out,'index.html'),'w').write(html)
-sw='''// Offline cache for the Eidolon Vhar Spellbook. Bump VERSION after changing the app.
+sw='''// Offline cache for the Eidolon Vhar app. Bump VERSION after changing the app.
 const VERSION='ev-spellbook-'''+ver+''''';
 const CORE=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));});

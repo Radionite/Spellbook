@@ -1,5 +1,5 @@
-// Offline cache for the Eidolon Vhar Spellbook. Bump VERSION after changing the app.
-const VERSION='ev-spellbook-8'';
+// Offline cache for the Eidolon Vhar app. Bump VERSION after changing the app.
+const VERSION='ev-spellbook-9'';
 const CORE=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
